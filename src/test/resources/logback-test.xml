@@ -1,0 +1,35 @@
+<configuration debug="true">
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<Pattern>%d %-5p %c %X - %m%n</Pattern>
+		</encoder>
+	</appender>
+
+	<!-- turn OFF all logging (children can override) -->
+	<!-- logger name="com.change_vision.astah.extension.plugin.dbreverse" /-->
+	<define name="astah.edition" class="com.change_vision.astah.extension.plugin.dbreverse.internal.AstahEditionPropertyDefiner">
+	</define>
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${user.home}/.astah/${astah.edition}/extention_plugin_dbreverse.log</File>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>extention_plugin_dbreverse.%i.log.zip</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>3</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>1MB</MaxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<charset>UTF-8</charset>
+			<Pattern>%d %-5p %c %X - %m%n</Pattern>
+		</encoder>
+	</appender>
+	<root level="DEBUG">
+		<appender-ref ref="FILE" />
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>

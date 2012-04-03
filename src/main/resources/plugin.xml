@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension point="com.change_vision.astah.ui.actionSets">
+      <actionSet
+            label="%action_set_label"
+            visible="true"
+            id="com.change_vision.astah.extension.plugin.dbreverse.actionSet">
+         <menu
+               id="dbreverse"
+               label="%menu_group"
+               path="tool/dbreverse">
+         </menu>
+         <action
+			   label="%menu_label"
+               icon="icons/sample.gif"
+               class="jar.TemplateAction"
+               tooltip="%menu_tooltip"
+               menubarPath="tool/dbreverse/"
+               id="dbreverse">
+         </action>
+     </actionSet>
+   </extension>
+</plugin>

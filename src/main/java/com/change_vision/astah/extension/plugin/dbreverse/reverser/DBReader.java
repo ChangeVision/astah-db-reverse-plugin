@@ -1,0 +1,1047 @@
+package com.change_vision.astah.extension.plugin.dbreverse.reverser;
+
+import java.net.MalformedURLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+
+public class DBReader {
+
+	/**
+	 * TABLE_CAT String => table catalog (may be null)
+	 */
+	public static final int TABLE_CAT = 1;
+
+	/**
+	 * TABLE_SCHEM String => table schema (may be null)
+	 */
+	public static final int TABLE_SCHEM = 2;
+
+	/**
+	 * TABLE_NAME String => table name
+	 */
+	public static final int TABLE_NAME = 3;
+
+	/**
+	 * COLUMN_NAME String => column name
+	 */
+	public static final int COLUMN_NAME = 4;
+
+	/**
+	 * NON_UNIQUE boolean => unique
+	 */
+	public static final int NON_UNIQUE = 4;
+
+	/**
+	 * DATA_TYPE int => SQL type from java.sql.Types
+	 */
+	public static final int DATA_TYPE = 5;
+
+	/**
+	 * TYPE_NAME String => Data source dependent type name, for a UDT the type name is fully qualified
+	 */
+	public static final int TYPE_NAME = 6;
+
+	/**
+	 * INDEX_NAME String => index name
+	 */
+	public static final int INDEX_NAME = 6;
+
+	/**
+	 * COLUMN_SIZE int => column size.
+	 * For char or date types this is the maximum number of characters, for numeric or decimal types this is precision.
+	 */
+	public static final int COLUMN_SIZE = 7;
+
+	/**
+	 * FOREIGN_KEY string => foreign key
+	 */
+	public static final int FOREIGN_KEY = 8;
+
+	/**
+	 * DECIMAL_DIGITS int => the number of fractional digits
+	 */
+	public static final int DECIMAL_DIGITS = 9;
+
+	/**
+	 * INDEX_COLUMNS String => columns for indexes
+	 */
+	public static final int INDEX_COLUMNS = 9;
+
+	/**
+	 * NUM_PREC_RADIX int => Radix (typically either 10 or 2)
+	 */
+	public static final int NUM_PREC_RADIX = 10;
+
+	/**
+	 * NULLABLE int => is NULL allowed.
+	 * columnNoNulls - might not allow NULL values
+	 * columnNullable - definitely allows NULL values
+	 * columnNullableUnknown - nullability unknown
+	 */
+	public static final int NULLABLE = 11;
+
+	/**
+	 * REMARKS String => comment describing column (may be null)
+	 */
+	public static final int REMARKS = 12;
+
+	/**
+	 * RELATION_NAME String => relation name
+	 */
+	public static final int RELATION_NAME = 12;
+
+	/**
+	 * COLUMN_DEF String => default value (may be null)
+	 */
+	public static final int COLUMN_DEF = 13;
+
+	/**
+	 * SQL_DATA_TYPE int => unused
+	 */
+	public static final int SQL_DATA_TYPE = 14;
+
+	/**
+	 * SQL_DATETIME_SUB int => unused
+	 */
+	public static final int SQL_DATETIME_SUB = 15;
+
+	/**
+	 * CHAR_OCTET_LENGTH int => for char types the maximum number of bytes in the column
+	 */
+	public static final int CHAR_OCTET_LENGTH = 16;
+
+	/**
+	 * int => index of column in table (starting at 1)
+	 */
+	public static final int ORDINAL_POSITION = 17;
+
+	/**
+	 * String => "NO" means column definitely does not allow NULL values; "YES" means the column might allow NULL values. An empty string means nobody knows.
+	 */
+	public static final int IS_NULLABLE = 18;
+
+	/**
+	 * String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
+	 */
+	public static final int SCOPE_CATLOG = 19;
+
+	/**
+	 * String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
+	 */
+	public static final int SCOPE_SCHEMA = 20;
+
+	/**
+	 * String => table name that this the scope of a reference attribure (null if the DATA_TYPE isn't REF)
+	 */
+	public static final int SCOPE_TABLE = 21;
+
+	/**
+	 * short => source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
+	 */
+	public static final int SOURCE_DATA_TYPE = 22;
+
+	public static final String ORACLE = "Oracle";
+
+	public static final String MYSQL = "MySql";
+
+	public static final String MSSQLSERVER = "MsSqlServer";
+
+	public static final String POSTGRES = "PostGreSQL";
+
+	public static final String HSQL = "HSQLDB";
+
+	public static final String H2 = "H2 Database Engine";
+
+	public static final String HiRDB = "HiRDB";
+
+	public static final String NONE = "None";
+
+	public static final String OPTIONAL = "Optional";
+
+	public static final String REQUIRED = "Required";
+
+	private static final Logger logger = LoggerFactory.getLogger(DBReader.class);
+
+	private static DBReader instace = null;
+
+	private DBConnection connection;
+
+	private String dbType;
+
+	private List<String> tableNames;
+
+	public DBReader() {
+		connection = null;
+		dbType = "";
+		tableNames = null;
+	}
+
+	public static DBReader getInstance() {
+		if (instace == null) {
+			instace = new DBReader();
+		}
+
+		return instace;
+	}
+
+	/**
+	 * Establish connection with the server
+	 *
+	 * @throws MalformedURLException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
+	public void connect(ConnectionInfo connectionInfo) throws SQLException,
+			MalformedURLException, InstantiationException,
+			IllegalAccessException, ClassNotFoundException {
+		close();
+		connection = new DBConnection();
+		connection.connect(connectionInfo);
+	}
+
+	public void close() throws SQLException {
+		if (connection != null) {
+			connection.close();
+			connection = null;
+		}
+	}
+
+	public String[] getSchemas() throws SQLException {
+		if (ORACLE.equals(dbType)) {
+			return connection.getSchemas();
+		} else if (MYSQL.equals(dbType)) {
+			return connection.getCatalogs();
+		} else if (MSSQLSERVER.equals(dbType)) {
+			return connection.getCatalogs();
+		} else if (POSTGRES.equals(dbType)) {
+			return connection.getSchemas();
+		} else if (H2.equals(dbType)) {
+			return connection.getSchemas();
+		} else if (HSQL.equals(dbType)) {
+			return connection.getSchemas();
+		} else if (HiRDB.equals(dbType)) {
+			return connection.getSchemas();
+		} else if (Constants.OTHERS_CATEGORY.equals(dbType)) {
+			return connection.getCatalogs();
+		} else if (Constants.OTHERS_SCHEMA.equals(dbType)) {
+			return connection.getSchemas();
+		}
+		return connection.getSchemas();
+	}
+
+	public HashSet<String> getPKs(String catalog, String schema, String table) throws SQLException {
+		ResultSet res = getPKSet(catalog, schema, table);
+		if (res == null) {
+			res = getPKSet(schema, catalog, table);
+		}
+		HashSet<String> pks = new HashSet<String>();
+		if (res != null) {
+			while (res.next()) {
+				pks.add(res.getString(COLUMN_NAME));
+			}
+			res.close();
+		}
+		return pks;
+	}
+
+	private ResultSet getPKSet(String catalog, String schema, String table) {
+		try {
+			return connection.getMetaData().getPrimaryKeys(catalog, schema, table);
+		} catch (SQLException e) {
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+	}
+
+	public HashMap<String, String> getFKs(String catalog, String schema, String table) throws SQLException {
+		HashMap<String, String> fks = new HashMap<String, String>();
+		ResultSet res = null;
+		try {
+			res = connection.getMetaData().getImportedKeys(catalog, schema, table);
+		} catch (Exception e) {
+			return fks;
+		}
+		while (res.next()) {
+			// reference table name
+			String tableName = res.getString(TABLE_NAME);
+			// reference column name(primary key)
+			String pkName = res.getString(COLUMN_NAME);
+			// current column name(foreign key)
+			String fkName = res.getString(FOREIGN_KEY);
+
+			fks.put(fkName, tableName + "," + pkName);
+		}
+		res.close();
+		return fks;
+	}
+
+	public List<TableInfo> getTables(String catalog, String schema) throws SQLException {
+		if (connection == null) {
+			return null;
+		}
+		if (HiRDB.equals(dbType)) {
+			tableNames = connection.getTablesFromHiRDB(catalog, schema);
+		} else {
+			tableNames = connection.getTables(catalog, schema);
+		}
+
+		List<TableInfo> tableList = new ArrayList<TableInfo>();
+		TableInfo tbInfo = null;
+		for (String tableName : tableNames) {
+			tbInfo = new TableInfo();
+			// name
+			tbInfo.setName(tableName);
+			// attributes
+			tbInfo.addAttributes(getAttributes(catalog, schema, tableName));
+			// indexes
+			tbInfo.setIndexes(getIndexes(catalog, schema, tableName));
+
+			tableList.add(tbInfo);
+		}
+
+		return tableList;
+	}
+
+	private List<IndexInfo> getIndexes(String catalog, String schema, String table) throws SQLException {
+		List<IndexInfo> indexes = new ArrayList<IndexInfo>();
+		indexes.addAll(getIndexInfoes(catalog, schema, table));
+		return indexes;
+	}
+
+	private List<IndexInfo> getIndexInfoes(String catalog, String schema, String table) throws SQLException {
+		List<String> uniques = getUniqueIndexes(catalog, schema, table);
+		ResultSet indexSet = getIndexSet(catalog, schema, table, false);
+		if (indexSet == null) {
+			indexSet = getIndexSet(schema, catalog, table, false);
+		}
+
+		List<IndexInfo> indexes = new ArrayList<IndexInfo>();
+		if (indexSet != null) {
+			Map<String, IndexInfo> indexMap = new HashMap<String, IndexInfo>();
+			while (indexSet.next()) {
+				//parentEntity
+				String tableName = indexSet.getString(TABLE_NAME);
+				//name
+				String name = indexSet.getString(INDEX_NAME);
+				if (name == null) {
+					continue;
+				}
+				IndexInfo indexInfo;
+				if (indexMap.get(name) != null) {
+					indexInfo = (IndexInfo)indexMap.get(name);
+				} else {
+					indexInfo = new IndexInfo();
+					//unique
+					indexInfo.setUnique(uniques.contains(name));
+					indexInfo.setName(name);
+					indexInfo.setParentEntity(tableName);
+				}
+				//attributes
+				String[] attributes = indexSet.getString(INDEX_COLUMNS).split(",");
+				for (int i = 0 ; i < attributes.length; i++) {
+					indexInfo.addAttribute(attributes[i]);
+				}
+				if (!indexes.contains(indexInfo)) {
+					indexes.add(indexInfo);
+				}
+				indexMap.put(name, indexInfo);
+			}
+			indexSet.close();
+		}
+		return indexes;
+	}
+
+	private ResultSet getIndexSet(String catalog, String schema, String table, boolean isUnique) {
+		try {
+			return connection.getMetaData().getIndexInfo(catalog, schema, table, isUnique, true);
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	private List<String> getUniqueIndexes(String catalog, String schema, String table) throws SQLException {
+		List<String> uniques = new ArrayList<String>();
+		ResultSet indexSet = getIndexSet(catalog, schema, table, true);
+		if (indexSet == null) {
+			indexSet = getIndexSet(schema, catalog, table, true);
+		}
+		if (indexSet != null) {
+			while (indexSet.next()) {
+				//name
+				String name = indexSet.getString(INDEX_NAME);
+				if (name == null) {
+					continue;
+				}
+				uniques.add(name);
+			}
+			indexSet.close();
+		}
+		return uniques;
+	}
+
+	private List<AttributeInfo> getAttributes(String catalog, String schema, String tbName) throws SQLException {
+		HashSet<String> pks = getPKs(catalog, schema, tbName);
+		HashMap<String, String> fks = getFKs(catalog, schema, tbName);
+		ResultSet attrSet = connection.getMetaData().getColumns(catalog, schema, tbName, "%");
+		List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+		List<String> attrs = new ArrayList<String>();
+		while (attrSet.next()) {
+			AttributeInfo atInfo = new AttributeInfo();
+
+			//name
+			String attrName = getString(attrSet, COLUMN_NAME);
+			if (attrs.contains(attrName)) {
+				continue;
+			}
+			attrs.add(attrName);
+			atInfo.setName(attrName);
+
+			//data type
+			DatatypeInfo dInfo = getDatatypeInfo(attrSet);
+			atInfo.setDataType(dInfo);
+
+			//length precision
+			int length = getLength(attrSet, dInfo);
+			if (!NONE.equals(dInfo.getPrecisionConstraint())) {
+				atInfo.setPrecision(String.valueOf(length));
+			} else if (!NONE.equals(dInfo.getLengthConstraint())) {
+				atInfo.setLength(String.valueOf(length));
+			}
+
+			//remark
+			String definition = getString(attrSet, REMARKS);
+			definition = definition == null ? "" : definition;
+			atInfo.setDefinition(definition);
+
+			//default value
+			String defaultValue = getString(attrSet, COLUMN_DEF);
+
+			defaultValue = defaultValue == null ? "" : defaultValue;
+			atInfo.setDefaultValue(defaultValue);
+
+			//not null
+			String notNull = getString(attrSet,IS_NULLABLE);
+			if (notNull != null) {
+				notNull = notNull.trim();
+			}
+			atInfo.setNotNull("NO".equals(notNull));
+
+			//Primary Key
+			atInfo.setPK(pks.contains(attrName));
+			atInfo.setFK(fks.keySet().contains(attrName));
+
+			attributes.add(atInfo);
+		}
+		attrSet.close();
+
+		return attributes;
+	}
+
+	private String getString(ResultSet rSet, int columnIndex) {
+		String value;
+		try {
+			value = rSet.getString(columnIndex);
+		} catch (Exception e) {
+			return "";
+		}
+		return value;
+	}
+
+	private int getLength(ResultSet attrSet, DatatypeInfo dInfo) throws SQLException {
+		if (POSTGRES.equals(dbType)
+				&& ("TIME".equalsIgnoreCase(dInfo.getName())
+						|| "TIMESTAMP".equalsIgnoreCase(dInfo.getName())
+						|| "TIMESTAMPTZ".equalsIgnoreCase(dInfo.getName())
+						|| "TIMETZ".equalsIgnoreCase(dInfo.getName())
+						|| "INTERVAL".equalsIgnoreCase(dInfo.getName()))) {
+			return attrSet.getInt(DECIMAL_DIGITS);
+		}
+		return attrSet.getInt(COLUMN_SIZE);
+	}
+
+	private DatatypeInfo getDatatypeInfo(ResultSet attrSet) throws SQLException {
+		DatatypeInfo dInfo = new DatatypeInfo();
+		String dtName = attrSet.getString(TYPE_NAME);
+		dtName = getValidDatatypeName(dtName);
+		dInfo.setName(dtName);
+		if (ORACLE.equals(dbType) || H2.equals(dbType)) {
+			if ("CHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARCHAR2".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(REQUIRED);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NVARCHAR2".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(REQUIRED);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NUMBER".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("DATE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LONG".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("RAW".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(REQUIRED);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LONG RAW".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("ROWID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NCLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BFILE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("UROWID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("FLOAT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("XMLTYPE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP WITH LOCAL TIME ZONE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP WITH TIME ZONE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			}
+		} else if (MYSQL.equals(dbType)) {
+			if ("BIT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} if ("INT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BOOL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BOOLEAN".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TINYINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SMALLINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MEDIUMINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INTEGER".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BIGINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("FLOAT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DOUBLE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DECIMAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("DATE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DATETIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("YEAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("BINARY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARBINARY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TINYBLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TINYTEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MEDIUMBLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MEDIUMTEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LONGBLOB".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LONGTEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			}
+		} else if (MSSQLSERVER.equals(dbType)) {
+			if ("BIGINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BINARY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BIT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DATETIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DECIMAL ".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(REQUIRED);
+			} else if ("FLOAT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("IMAGE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MONEY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NTEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NUMERIC".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("NVARCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SMALLDATETIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SMALLINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SMALLMONEY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SQL_VARIANT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SYSNAME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TINYINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("UNIQUEIDENTIFIER".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARBINARY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("VARCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			}
+		} else if (POSTGRES.equals(dbType)) {
+			if ("ABSTIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("ACLITEM".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BIT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BOOL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BOX".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BPCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BYTEA".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CIDR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("CIRCLE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("DATE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("FLOAT4".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("FLOAT8".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("GTSVECTOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INET".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INT2".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INT2VECTOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INT4".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INT8".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("INTERVAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LINE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("LSEG".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MACADDR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("MONEY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NAME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("NUMERIC".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("OID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("OIDVECTOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("PATH".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("POINT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("POLYGON".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REFCURSOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGCLASS".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGCONFIG".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGDICTIONARY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGOPER".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGOPERATOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGPROC".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGPROCEDURE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("REGTYPE".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("RELTIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SMGR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TEXT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIME".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMP".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMESTAMPTZ".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TIMETZ".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TINTERVAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TSQUERY".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TSVECTOR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("TXID_SNAPSHOT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("UNKNOWN".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("UUID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARBIT".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(OPTIONAL);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("VARCHAR".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(OPTIONAL);
+			} else if ("XID".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("XML".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("SERIAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			} else if ("BIGSERIAL".equalsIgnoreCase(dtName)) {
+				dInfo.setLengthConstraint(NONE);
+				dInfo.setPrecisionConstraint(NONE);
+			}
+		}
+		return dInfo;
+	}
+
+	private String getValidDatatypeName(String name) {
+		String lowerCaseName = name.toLowerCase();
+		//remove "Identity", jude not support it so far
+		if (lowerCaseName.indexOf("identity") != -1) {
+			name = name.substring(0, lowerCaseName.indexOf("identity")).trim();
+		} else if (lowerCaseName.indexOf("unsigned") != -1) {
+			name = name.substring(0, lowerCaseName.indexOf("unsigned")).trim();
+		}
+		return name;
+	}
+
+	public List<ERRelationshipInfo> getRelationships(String catalog, String schema) throws SQLException {
+		if (connection == null) {
+			return null;
+		}
+		if (tableNames == null) {
+			if (HiRDB.equals(dbType)) {
+				tableNames = connection.getTablesFromHiRDB(catalog, schema);
+			} else {
+				tableNames = connection.getTables(catalog, schema);
+			}
+		}
+		List<ERRelationshipInfo> relationList = new ArrayList<ERRelationshipInfo>();
+		PreparedStatement preparedStatement = null;
+		for (String tableName : tableNames) {
+			HashSet<String> pks = getPKs(catalog, schema, tableName);
+
+			Map<String, ERRelationshipInfo> relationMap = new HashMap<String, ERRelationshipInfo>();
+			ResultSet res = null;
+			try {
+				if (ORACLE.equals(dbType)) {
+					if (preparedStatement == null) {
+						preparedStatement = getRelationinfoBySql();
+					}
+					preparedStatement.setObject(1, tableName);
+					res = preparedStatement.executeQuery();
+				} else {
+					res = connection.getMetaData().getImportedKeys(catalog, schema, tableName);
+				}
+			} catch (Exception e) {
+				continue;
+			}
+			while (res.next()) {
+				String relationName;
+				String fkName;
+				String referenceTableName;
+				String pkName;
+				if (ORACLE.equals(dbType)) {
+					//current column name(foreign key)
+					fkName = res.getString(3);
+					//relation name
+					relationName = res.getString(4);
+					//reference table name
+					referenceTableName = res.getString(6);
+					//reference column name(primary key)
+					pkName = res.getString(7);
+				} else {
+					//reference table name
+					referenceTableName = res.getString(TABLE_NAME);
+					//reference column name(primary key)
+					pkName = res.getString(COLUMN_NAME);
+					//current column name(foreign key)
+					fkName = res.getString(FOREIGN_KEY);
+					//relation name
+					relationName = res.getString(RELATION_NAME);
+				}
+
+				if (relationMap.keySet().contains(referenceTableName)) {
+					ERRelationshipInfo info =
+						(ERRelationshipInfo) relationMap.get(referenceTableName);
+					if (!info.keys.containsKey(pkName)) {
+						info.addKey(pkName, fkName);
+					}
+					continue;
+				}
+
+				ERRelationshipInfo rInfo = new ERRelationshipInfo();
+				rInfo.setChildTable(tableName);
+				rInfo.setParentTable(referenceTableName);
+				rInfo.setName(relationName);
+				rInfo.addKey(pkName, fkName);
+
+				// 一意制約、関連する親のオブジェクトが必須
+				if (pks.contains(fkName)) {
+					rInfo.setIdentifying(true);
+					rInfo.setParentRequired(true);
+				} else {
+					rInfo.setNonIdentifying(true);
+				}
+
+				relationMap.put(referenceTableName, rInfo);
+				relationList.add(rInfo);
+			}
+			res.close();
+		}
+		if (preparedStatement != null) {
+			preparedStatement.close();
+			preparedStatement = null;
+		}
+		return relationList;
+	}
+
+	private PreparedStatement getRelationinfoBySql() throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		sql.append("select ");
+				/*FK SCHEMA*/
+		sql.append("a.owner, ");
+				/*FK tableName*/
+		sql.append("a.table_name, ");
+				/*FK name*/
+		sql.append("substr(c.column_name,1,127),");
+				/*Relationship Name*/
+		sql.append("c.constraint_name, ");
+				/*PK SCHEMA*/
+		sql.append("b.owner, ");
+				/*PK tableName*/
+		sql.append("b.table_name, ");
+				/*PK name*/
+		sql.append("substr(d.column_name,1,127)");
+
+		sql.append(" from ");
+		sql.append("user_constraints a,");
+		sql.append("user_constraints b,");
+		sql.append("user_cons_columns c,");
+		sql.append("user_cons_columns d");
+
+		sql.append(" where ");
+		sql.append("a.table_name=?");
+		sql.append(" and a.r_constraint_name=b.constraint_name");
+		sql.append(" and a.constraint_type='R'");
+		sql.append(" and a.r_owner=b.owner");
+		sql.append(" and a.constraint_name=c.constraint_name");
+		sql.append(" and b.constraint_name=d.constraint_name");
+		sql.append(" and a.owner=c.owner");
+		sql.append(" and a.table_name=c.table_name");
+		sql.append(" and b.owner=d.owner");
+		sql.append(" and b.table_name=d.table_name");
+		sql.append(" and c.position=d.position");
+		sql.append(" order by c.column_name");
+
+		logger.debug(sql.toString());
+
+		return connection.getpreparedSql(sql.toString());
+	}
+
+	public void setDBType(String dbType) {
+		this.dbType = dbType;
+	}
+}
