@@ -3,10 +3,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <properties>
     <bundle.symbolicName>com.change_vision.astah.extension.plugin.dbreverse</bundle.symbolicName>
-    <bundle.namespace>jar</bundle.namespace>
+    <bundle.namespace>com.change_vision.astah.extension.plugin.dbreverse</bundle.namespace>
     <plugin.install>true</plugin.install>
     <astah.version>6.6</astah.version>
-    <astah.edition>all</astah.edition>
+    <astah.edition>pro</astah.edition>
   </properties>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.change_vision.astah.extension.plugin</groupId>

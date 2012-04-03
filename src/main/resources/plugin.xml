@@ -2,21 +2,16 @@
 <plugin>
    <extension point="com.change_vision.astah.ui.actionSets">
       <actionSet
-            label="%action_set_label"
+            label="%action.label"
             visible="true"
             id="com.change_vision.astah.extension.plugin.dbreverse.actionSet">
-         <menu
-               id="dbreverse"
-               label="%menu_group"
-               path="tool/dbreverse">
-         </menu>
          <action
-			   label="%menu_label"
+			   label="%action.label"
                icon="icons/sample.gif"
-               class="jar.TemplateAction"
-               tooltip="%menu_tooltip"
-               menubarPath="tool/dbreverse/"
-               id="dbreverse">
+               class="com.change_vision.astah.extension.plugin.dbreverse.actions.ReverseAction"
+               tooltip="DB reverse"
+               menubarPath="tool/er"
+               id="com.change_vision.astah.extension.plugin.dbreverse.actions.ReverseAction">
          </action>
      </actionSet>
    </extension>
