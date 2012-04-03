@@ -12,12 +12,15 @@ Astah Professional 6.5 or later
 Description
 ----------------
 This imports tables from a Database into ER models in Astah.
+http://astah.net/features/db-reverse-plugin
 
 How to install
 ----------------
 1. Deploy the jar file in the "plugins" folder under the Astah Install folder
 2. Start Astah
 3. You find that the [DB Reverse] has been added under the [Tool] menu
+
+Also refer to : http://astah.net/features/db-reverse-plugin
 
 Reference
 ----------------
