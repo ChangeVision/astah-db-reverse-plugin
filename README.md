@@ -19,7 +19,7 @@ How to install
 2. Start Astah
 3. You find that the [DB Reverse] has been added under the [Tool] menu
 
-http://astah.net/features/cpp-reverse-plugin
+http://astah.net/features/db-reverse-plugin
 
 Reference
 ----------------
