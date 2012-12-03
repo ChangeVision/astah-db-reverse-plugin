@@ -14,10 +14,6 @@ public class Activator implements BundleActivator {
 	private ServiceReference reference;
 
 	public void start(BundleContext context) {
-		EditionChecker checker = new EditionChecker();
-		if (checker.hasError()) {
-			return;
-		}
 		ServiceTracker tracker = new ServiceTracker(context, IMessageDialogHandlerFactory.class.getName(), null);
 		tracker.open();
 		initializeMessageDialogHandler(context);
