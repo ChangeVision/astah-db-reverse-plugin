@@ -50,4 +50,12 @@ public class IndexInfo {
 	public void setUnique(boolean isUnique) {
 		this.isUnique = isUnique;
 	}
+
+    @Override
+    public String toString() {
+        return "IndexInfo [name=" + name + ", parentEntity=" + parentEntity + ", attributes="
+                + attributes + ", isUnique=" + isUnique + ", getClass()=" + getClass()
+                + ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
+    }
+	
 }

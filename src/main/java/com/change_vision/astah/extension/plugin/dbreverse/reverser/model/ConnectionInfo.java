@@ -61,4 +61,11 @@ public class ConnectionInfo {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+    @Override
+    public String toString() {
+        return "ConnectionInfo [name=" + name + ", jdbcurl=" + jdbcurl + ", classname=" + classname
+                + ", pathfile=" + pathfile + ", login=" + login + ", password=" + password + "]";
+    }
+	
 }

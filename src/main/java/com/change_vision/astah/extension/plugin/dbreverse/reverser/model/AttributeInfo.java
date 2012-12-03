@@ -134,5 +134,4 @@ public class AttributeInfo {
                 + isPK + ", isFK=" + isFK + ", isNotNull=" + isNotNull + "]";
     }
 	
-	
 }

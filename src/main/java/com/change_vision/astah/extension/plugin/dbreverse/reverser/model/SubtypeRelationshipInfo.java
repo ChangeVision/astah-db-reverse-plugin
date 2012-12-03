@@ -32,4 +32,13 @@ public class SubtypeRelationshipInfo extends RelationshipInfo {
 	public void setConclusive(boolean isConclusive) {
 		this.isConclusive = isConclusive;
 	}
+
+    @Override
+    public String toString() {
+        return "SubtypeRelationshipInfo [discriminatorAttribute=" + discriminatorAttribute
+                + ", isConclusive=" + isConclusive + ", name=" + name + ", parentTable="
+                + parentTable + ", childTable=" + childTable + ", definition=" + definition
+                + ", keys=" + keys + "]";
+    }
+	
 }
