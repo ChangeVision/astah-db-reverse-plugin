@@ -127,6 +127,9 @@ public class DBConnection {
 		return tables;
 	}
 
+	/**
+	 * FIXME Maybe this method is not used by other methods.
+	 */
 	public ResultSet getAttributes(String catalog, String schema,String table) throws SQLException {
 		return metaData.getColumns(catalog, schema, table, "%");
 	}
