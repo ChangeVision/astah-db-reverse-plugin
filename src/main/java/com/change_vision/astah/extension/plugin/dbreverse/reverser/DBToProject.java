@@ -11,6 +11,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.TableConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
@@ -51,6 +52,8 @@ public class DBToProject {
 	private Map<String, AttributeInfo> fkInfo;
 
 	private Map indexMap;
+	
+	private TableConverter tableConverter;
 
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
@@ -68,6 +71,7 @@ public class DBToProject {
 		try {
 			TransactionManager.beginTransaction();
 	        erModel = editor.createERModel(project, "ER Model");
+	        tableConverter = new TableConverter(editor,erModel.getSchemata()[0]);
 			importTable(tables);
 			importRelationships(relationships);
 			showTableCount(tables.size());
@@ -84,21 +88,14 @@ public class DBToProject {
 
 	private void importTable(List<TableInfo> tables) throws InvalidEditingException {
 		for (TableInfo tInfo : tables) {
-			createTable(tInfo);
+		    IEREntity entity = tableConverter.convert(tInfo);
+	        addAttributes(tInfo, entity);
+	        addIndexes(tInfo, entity);
 			showImportingTable(tInfo.getName());
 		}
 	}
 
 	public void showImportingTable(String name) {
-	}
-
-	private void createTable(TableInfo tInfo) throws InvalidEditingException {
-		IERSchema defaultSchema = erModel.getSchemata()[0];
-		IEREntity entity = editor.createEREntity(defaultSchema, tInfo.getName(), tInfo.getName());
-		entity.setType(tInfo.getType());
-		entity.setDefinition(tInfo.getDefinition());
-		addAttributes(tInfo, entity);
-		addIndexes(tInfo, entity);
 	}
 
 	private void addIndexes(TableInfo tInfo, IEREntity entity)

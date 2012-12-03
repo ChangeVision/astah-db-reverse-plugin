@@ -1,5 +1,8 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -13,6 +16,12 @@ import org.junit.rules.TemporaryFolder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
+import com.change_vision.jude.api.inf.model.IEREntity;
+import com.change_vision.jude.api.inf.model.IERModel;
+import com.change_vision.jude.api.inf.model.IERSchema;
+import com.change_vision.jude.api.inf.model.INamedElement;
+import com.change_vision.jude.api.inf.project.ProjectAccessor;
+import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 
 public class DBToProjectTest {
 	
@@ -51,6 +60,22 @@ public class DBToProjectTest {
 		String projectFilePath = projectFile.getAbsolutePath();
 		
 		dbToProject.importToProject(projectFilePath, tables, relationships);
+		ProjectAccessor accessor = ProjectAccessorFactory.getProjectAccessor();
+		accessor.open(projectFile.getAbsolutePath());
+		
+		INamedElement[] elements = accessor.findElements(IERModel.class);
+		assertThat(elements,is(notNullValue()));
+		
+		IERModel erModel = (IERModel)elements[0];
+		INamedElement[] ownedElements = erModel.getOwnedElements();
+		assertThat(ownedElements.length,is(1));
+		INamedElement candidatesOfSchema = ownedElements[0];
+        assertThat(candidatesOfSchema,is(instanceOf(IERSchema.class)));
+        IERSchema schema = (IERSchema) candidatesOfSchema;
+        IEREntity[] entities = schema.getEntities();
+        assertThat(entities.length,is(2));
+        assertThat(entities[0].getName(),is("SAMPLE"));
+        assertThat(entities[1].getName(),is("SAMPLE_RELATIONSHIPS"));
 	}
 	
 	@Test
