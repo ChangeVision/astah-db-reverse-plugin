@@ -1,5 +1,16 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
@@ -15,6 +26,7 @@ import com.change_vision.jude.api.inf.exception.BadTransactionException;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
 import com.change_vision.jude.api.inf.exception.ProjectLockedException;
+import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.model.IERAttribute;
 import com.change_vision.jude.api.inf.model.IERDatatype;
 import com.change_vision.jude.api.inf.model.IERDomain;
@@ -27,16 +39,6 @@ import com.change_vision.jude.api.inf.model.IERSubtypeRelationship;
 import com.change_vision.jude.api.inf.model.IModel;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DBToProject {
 
@@ -51,19 +53,21 @@ public class DBToProject {
 	private Map indexMap;
 
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
-			ProjectLockedException, InvalidEditingException, Throwable {
+			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
 		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
 		prjAccessor.create(projectFilePath);
 		IModel project = prjAccessor.getProject();
 		if (project == null) {
 			return;
 		}
+		
+		editor = ModelEditorFactory.getERModelEditor();
+		fkInfo = new HashMap<String, AttributeInfo>();
+		indexMap = new HashMap();
+
 		try {
 			TransactionManager.beginTransaction();
-			editor = ModelEditorFactory.getERModelEditor();
-			erModel = editor.createERModel(project, "ER Model");
-			fkInfo = new HashMap<String, AttributeInfo>();
-			indexMap = new HashMap();
+	        erModel = editor.createERModel(project, "ER Model");
 			importTable(tables);
 			importRelationships(relationships);
 			showTableCount(tables.size());
