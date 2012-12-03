@@ -19,7 +19,7 @@ public class DBToProjectTest {
 	public TemporaryFolder folder = new TemporaryFolder();
 
 	@Test
-	public final void testImportToProject_空ファイルを指定しても落ちないこと() throws LicenseNotFoundException, ProjectLockedException, InvalidEditingException, Throwable {
+	public void testImportToProject_空ファイルを指定しても落ちないこと() throws LicenseNotFoundException, ProjectLockedException, InvalidEditingException, Throwable {
 		DBToProject dbToProject = new DBToProject();
 		File projectFile = folder.newFile("test.asta");
 		String projectFilePath = projectFile.getAbsolutePath();
@@ -30,7 +30,7 @@ public class DBToProjectTest {
 	}
 	
 	@Test
-	public final void testImportToProject_空のastaファイルを指定しても落ちないこと() throws LicenseNotFoundException, ProjectLockedException, InvalidEditingException, Throwable {
+	public void testImportToProject_空のastaファイルを指定しても落ちないこと() throws LicenseNotFoundException, ProjectLockedException, InvalidEditingException, Throwable {
 		DBToProject dbToProject = new DBToProject();
 		List<TableInfo> tables = new ArrayList<TableInfo>();
 		List<ERRelationshipInfo> relationships = new ArrayList<ERRelationshipInfo>();
