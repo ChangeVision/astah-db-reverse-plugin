@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+
 public class DBConnection {
 
 	/**

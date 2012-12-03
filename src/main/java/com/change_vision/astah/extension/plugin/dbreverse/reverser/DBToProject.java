@@ -1,5 +1,13 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.RelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.SubtypeRelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
 import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
 import com.change_vision.jude.api.inf.editor.TransactionManager;

@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+
 public class DBConnectionTest {
 
     private ConnectionInfo info;

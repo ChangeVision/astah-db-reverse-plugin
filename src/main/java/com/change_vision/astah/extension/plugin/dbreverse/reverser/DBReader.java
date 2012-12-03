@@ -13,6 +13,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
 
 public class DBReader {
@@ -966,7 +972,7 @@ public class DBReader {
 				if (relationMap.keySet().contains(referenceTableName)) {
 					ERRelationshipInfo info =
 						(ERRelationshipInfo) relationMap.get(referenceTableName);
-					if (!info.keys.containsKey(pkName)) {
+					if (!info.getKeys().containsKey(pkName)) {
 						info.addKey(pkName, fkName);
 					}
 					continue;

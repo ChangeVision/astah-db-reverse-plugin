@@ -13,9 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.change_vision.astah.extension.plugin.dbreverse.Messages;
-import com.change_vision.astah.extension.plugin.dbreverse.reverser.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBReader;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.view.ConnectButton;
 import com.change_vision.astah.extension.plugin.dbreverse.view.DBComboBox;
 import com.change_vision.astah.extension.plugin.dbreverse.view.ImportButton;

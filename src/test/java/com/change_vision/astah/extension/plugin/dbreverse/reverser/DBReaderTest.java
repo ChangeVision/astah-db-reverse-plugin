@@ -16,6 +16,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
+
 public class DBReaderTest {
 
     private static final String TABLE_NAME_OF_SAMPLE_RELATIONSHIPS = "SAMPLE_RELATIONSHIPS";

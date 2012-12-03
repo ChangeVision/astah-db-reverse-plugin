@@ -1,7 +1,8 @@
-package com.change_vision.astah.extension.plugin.dbreverse.reverser;
+package com.change_vision.astah.extension.plugin.dbreverse.reverser.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class TableInfo {
 

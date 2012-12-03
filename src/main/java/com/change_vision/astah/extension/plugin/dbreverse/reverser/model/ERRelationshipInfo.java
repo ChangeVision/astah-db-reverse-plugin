@@ -1,4 +1,5 @@
-package com.change_vision.astah.extension.plugin.dbreverse.reverser;
+package com.change_vision.astah.extension.plugin.dbreverse.reverser.model;
+
 
 public class ERRelationshipInfo extends RelationshipInfo {
 

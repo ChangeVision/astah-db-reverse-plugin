@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.change_vision.astah.extension.plugin.dbreverse.Messages;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
 import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
 import com.change_vision.astah.extension.plugin.dbreverse.view.DBComboBox;
