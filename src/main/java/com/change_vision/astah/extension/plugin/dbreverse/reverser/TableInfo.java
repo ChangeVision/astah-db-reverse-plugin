@@ -74,4 +74,12 @@ public class TableInfo {
 	public List<IndexInfo> getIndexes() {
 		return indexes;
 	}
+
+    @Override
+    public String toString() {
+        return "TableInfo [name=" + name + ", type=" + type + ", definition=" + definition
+                + ", attributes=" + attributes + ", indexes=" + indexes + "]";
+    }
+	
+	
 }

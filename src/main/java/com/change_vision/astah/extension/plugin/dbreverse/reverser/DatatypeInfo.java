@@ -70,4 +70,13 @@ public class DatatypeInfo {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	
+    @Override
+    public String toString() {
+        return "DatatypeInfo [name=" + name + ", lengthConstraint=" + lengthConstraint
+                + ", precisionConstraint=" + precisionConstraint + ", defaultLength="
+                + defaultLength + ", defaultPrecision=" + defaultPrecision + ", description="
+                + description + "]";
+    }
+
 }

@@ -124,4 +124,14 @@ public class AttributeInfo {
 	public void setFK(boolean isFK) {
 		this.isFK = isFK;
 	}
+
+    @Override
+    public String toString() {
+        return "AttributeInfo [parentTable=" + parentTable + ", name=" + name + ", dataType="
+                + dataType + ", domain=" + domain + ", defaultValue=" + defaultValue + ", length="
+                + length + ", precision=" + precision + ", definition=" + definition + ", isPK="
+                + isPK + ", isFK=" + isFK + ", isNotNull=" + isNotNull + "]";
+    }
+	
+	
 }

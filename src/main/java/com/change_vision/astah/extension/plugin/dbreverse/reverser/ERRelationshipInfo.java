@@ -86,4 +86,15 @@ public class ERRelationshipInfo extends RelationshipInfo {
 	public void setErIndex(String erIndex) {
 		this.erIndex = erIndex;
 	}
+
+    @Override
+    public String toString() {
+        return "ERRelationshipInfo [verbPhraseParent=" + verbPhraseParent + ", verbPhraseChild="
+                + verbPhraseChild + ", isIdentifying=" + isIdentifying + ", isNonIdentifying="
+                + isNonIdentifying + ", isMultiToMulti=" + isMultiToMulti + ", isParentRequired="
+                + isParentRequired + ", erIndex=" + erIndex + ", name=" + name + ", parentTable="
+                + parentTable + ", childTable=" + childTable + ", definition=" + definition
+                + ", keys=" + keys + "]";
+    }
+	
 }

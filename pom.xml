@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.change_vision.astah.extension.plugin</groupId>
   <artifactId>dbreverse</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>%bundle.name</name>
   <description>%bundle.description</description>
@@ -177,6 +177,14 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>com.edugility</groupId>
+        <artifactId>h2-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <baseDirectory>${project.build.directory}/test-classes/data</baseDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>com.change_vision.astah</groupId>
         <artifactId>astah-maven-plugin</artifactId>
         <version>0.9.3</version>
@@ -260,6 +268,13 @@
       <systemPath>${astahPath}/astah-api.jar</systemPath>
     </dependency>
     <dependency>
+      <groupId>com.change_vision.astah</groupId>
+      <artifactId>astah-pro</artifactId>
+      <version>${astah.version}</version>
+      <scope>system</scope>
+      <systemPath>${astahPath}/astah-pro.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
       <version>4.2.0</version>
@@ -272,24 +287,24 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>1.8.4</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-all</artifactId>
-      <version>1.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
+	<dependency>
+		<groupId>com.h2database</groupId>
+		<artifactId>h2</artifactId>
+		<version>1.3.170</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>0.9.30</version>

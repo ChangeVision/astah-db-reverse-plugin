@@ -81,4 +81,12 @@ public class DomainInfo {
 	public void setDefinition(String definition) {
 		this.definition = definition;
 	}
+
+    @Override
+    public String toString() {
+        return "DomainInfo [name=" + name + ", datatypeName=" + datatypeName + ", defaultLength="
+                + defaultLength + ", defaultPrecision=" + defaultPrecision + ", defaultValue="
+                + defaultValue + ", isNotNull=" + isNotNull + ", definition=" + definition + "]";
+    }
+	
 }

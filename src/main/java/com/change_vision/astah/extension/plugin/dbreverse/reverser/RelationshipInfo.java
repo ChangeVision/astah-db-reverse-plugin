@@ -66,4 +66,12 @@ public abstract class RelationshipInfo {
 	public Map<String, String> getKeys() {
 		return keys;
 	}
+
+    @Override
+    public String toString() {
+        return "RelationshipInfo [name=" + name + ", parentTable=" + parentTable + ", childTable="
+                + childTable + ", definition=" + definition + ", keys=" + keys + "]";
+    }
+	
+	
 }
