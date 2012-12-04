@@ -167,19 +167,6 @@ public class DBToProject {
 		attri.setLengthPrecision(lengthPrecision.toString());
 	}
 
-	private IERAttribute createAttribute(AttributeInfo aInfo, IEREntity entity) throws InvalidEditingException {
-		DomainInfo dmInfo = aInfo.getDomain();
-		DatatypeInfo dtInfo = aInfo.getDataType();
-		if (!"".equals(dmInfo.getName())) {
-			IERDomain iDomain = createDomain(dmInfo);
-			return editor.createERAttribute(entity, aInfo.getName(), aInfo.getName(), iDomain);
-		} else if (!"".equals(dtInfo.getName())) {
-			IERDatatype datatype = createERDatatype(dtInfo);
-			return editor.createERAttribute(entity, aInfo.getName(), aInfo.getName(), datatype);
-		}
-		return null;
-	}
-
 	private IERDomain createDomain(DomainInfo dmInfo) throws InvalidEditingException {
 		IERDomain iDomain = getDomain(dmInfo.getName());
 		if (iDomain == null) {
