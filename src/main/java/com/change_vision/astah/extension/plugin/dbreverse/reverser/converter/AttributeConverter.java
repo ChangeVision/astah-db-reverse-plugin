@@ -27,16 +27,37 @@ public class AttributeConverter {
     public IERAttribute convert(IEREntity owner, AttributeInfo attributeInfo) throws InvalidEditingException {
         if(attributeInfo == null) throw new IllegalArgumentException("argument is null");
         if(owner == null) throw new IllegalArgumentException("owner is null");
-        DomainInfo dmInfo = attributeInfo.getDomain();
-        DatatypeInfo dtInfo = attributeInfo.getDataType();
-        if (!"".equals(dmInfo.getName())) {
-            IERDomain iDomain = createDomain(dmInfo);
-            return editor.createERAttribute(owner, attributeInfo.getName(), attributeInfo.getName(), iDomain);
-        } else if (!"".equals(dtInfo.getName())) {
-            IERDatatype datatype = createERDatatype(dtInfo);
+        IERAttribute converted = convertByDomain(owner, attributeInfo);
+        if(converted != null) return converted;
+        return convertByDataType(owner, attributeInfo);
+    }
+
+    private IERAttribute convertByDataType(IEREntity owner, AttributeInfo attributeInfo)
+            throws InvalidEditingException {
+        DatatypeInfo dataTypeInfo = attributeInfo.getDataType();
+        if (isDatatypeAttribute(dataTypeInfo)) {
+            IERDatatype datatype = createERDatatype(dataTypeInfo);
             return editor.createERAttribute(owner, attributeInfo.getName(), attributeInfo.getName(), datatype);
         }
         return null;
+    }
+
+    private IERAttribute convertByDomain(IEREntity owner, AttributeInfo attributeInfo)
+            throws InvalidEditingException {
+        DomainInfo domainInfo = attributeInfo.getDomain();
+        if (isDomainAttribute(domainInfo)) {
+            IERDomain iDomain = createDomain(domainInfo);
+            return editor.createERAttribute(owner, attributeInfo.getName(), attributeInfo.getName(), iDomain);
+        }
+        return null;
+    }
+
+    private boolean isDatatypeAttribute(DatatypeInfo dataTypeInfo) {
+        return !"".equals(dataTypeInfo.getName());
+    }
+
+    private boolean isDomainAttribute(DomainInfo domainInfo) {
+        return !"".equals(domainInfo.getName());
     }
     
     private IERDomain createDomain(DomainInfo dmInfo) throws InvalidEditingException {
