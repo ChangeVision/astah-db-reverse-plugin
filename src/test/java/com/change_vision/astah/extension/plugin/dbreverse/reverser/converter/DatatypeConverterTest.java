@@ -3,6 +3,7 @@ package com.change_vision.astah.extension.plugin.dbreverse.reverser.converter;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -55,6 +56,19 @@ public class DatatypeConverterTest {
         datatypeInfo.setName("hoge");
         IERDatatype converted = converter.convert(datatypeInfo);
         assertThat(converted,is(notNullValue()));
+    }
+    
+    @Test
+    public void convertDetail() throws Exception {
+        when(editor.createERDatatype(erModel, "hoge")).thenReturn(datatype);
+        converter = new DatatypeConverter(editor,erModel);
+        DatatypeInfo datatypeInfo = new DatatypeInfo();
+        datatypeInfo.setName("hoge");
+        datatypeInfo.setLengthConstraint("10");
+        datatypeInfo.setPrecisionConstraint("12");
+        converter.convert(datatypeInfo);
+        verify(datatype).setLengthConstraint("10");
+        verify(datatype).setPrecisionConstraint("12");
     }
 
 }

@@ -20,7 +20,10 @@ public class DatatypeConverter {
         if(datatypeInfo == null) throw new IllegalArgumentException("datatype is null.");
         String name = datatypeInfo.getName();
         if (name == null || name.isEmpty()) throw new IllegalArgumentException("name is empty.");
-        return editor.createERDatatype(erModel, name);
+        IERDatatype converted = editor.createERDatatype(erModel, name);
+        converted.setLengthConstraint(datatypeInfo.getLengthConstraint());
+        converted.setPrecisionConstraint(datatypeInfo.getPrecisionConstraint());
+        return converted;
     }
 
 }

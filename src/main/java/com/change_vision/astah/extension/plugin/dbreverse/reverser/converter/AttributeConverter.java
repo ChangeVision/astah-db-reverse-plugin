@@ -3,6 +3,7 @@ package com.change_vision.astah.extension.plugin.dbreverse.reverser.converter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DatatypeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
@@ -18,10 +19,14 @@ public class AttributeConverter {
 
     private ERModelEditor editor;
     private IERModel erModel;
+    private DatatypeFinder datatypeFinder;
+    private DatatypeConverter datatypeConverter;
 
     public AttributeConverter(ERModelEditor editor,IERModel erModel) {
         this.editor = editor;
         this.erModel = erModel;
+        this.datatypeFinder = new DatatypeFinder(erModel.getSchemata()[0]);
+        this.datatypeConverter = new DatatypeConverter(editor, erModel);
     }
 
     public IERAttribute convert(IEREntity owner, AttributeInfo attributeInfo) throws InvalidEditingException {
@@ -79,9 +84,10 @@ public class AttributeConverter {
     private IERDomain createDomain(DomainInfo dmInfo) throws InvalidEditingException {
         IERDomain iDomain = getDomain(dmInfo.getName());
         if (iDomain == null) {
-            IERDatatype datatype = getDatatype(dmInfo.getDatatypeName());
+            String datatypeName = dmInfo.getDatatypeName();
+            IERDatatype datatype = datatypeFinder.find(datatypeName);
             if (datatype == null) {
-                datatype = editor.createERDatatype(erModel, dmInfo.getDatatypeName());
+                datatype = editor.createERDatatype(erModel, datatypeName);
             }
             iDomain = editor.createERDomain(erModel, null, dmInfo.getName(), dmInfo.getName(), datatype);
         }
@@ -89,15 +95,14 @@ public class AttributeConverter {
         return iDomain;
     }
     
-    private IERDatatype createERDatatype(DatatypeInfo dtInfo) throws InvalidEditingException {
-        IERDatatype datatype = getDatatype(dtInfo.getName());
+    private IERDatatype createERDatatype(DatatypeInfo datatypeInfo) throws InvalidEditingException {
+        String datatypeName = datatypeInfo.getName();
+        IERDatatype datatype = datatypeFinder.find(datatypeName);
         if (datatype == null) {
-            datatype = editor.createERDatatype(erModel, dtInfo.getName());
-            datatype.setLengthConstraint(dtInfo.getLengthConstraint());
-            datatype.setPrecisionConstraint(dtInfo.getPrecisionConstraint());
+            datatype = datatypeConverter.convert(datatypeInfo);
         }
-        String dLen = dtInfo.getDefaultLength();
-        String dPre = dtInfo.getDefaultPrecision();
+        String dLen = datatypeInfo.getDefaultLength();
+        String dPre = datatypeInfo.getDefaultPrecision();
         StringBuilder lengthPrecision = new StringBuilder();
         lengthPrecision.append(dLen);
         lengthPrecision.append(("".equals(dLen) || "".equals(dPre)) ? "" : ",");
@@ -105,7 +110,7 @@ public class AttributeConverter {
         if (lengthPrecision.length() > 0) {
             datatype.setDefaultLengthPrecision(lengthPrecision.toString());
         }
-        datatype.setDescription(dtInfo.getDescription());
+        datatype.setDescription(datatypeInfo.getDescription());
 
         return datatype;
     }
@@ -118,16 +123,6 @@ public class AttributeConverter {
             domains.addAll(getAllChildDomains(child));
         }
         return domains;
-    }
-
-    private IERDatatype getDatatype(String name) {
-        IERDatatype[] datatypes = erModel.getSchemata()[0].getDatatypes();
-        for (IERDatatype datatype : datatypes) {
-            if (datatype.getName().equalsIgnoreCase(name)) {
-                return datatype;
-            }
-        }
-        return null;
     }
     
     private IERDomain getDomain(String name) {

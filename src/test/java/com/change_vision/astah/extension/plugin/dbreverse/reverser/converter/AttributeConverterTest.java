@@ -49,7 +49,6 @@ public class AttributeConverterTest {
     @Before
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
-        converter = new AttributeConverter(editor, erModel);
         when(erModel.getSchemata()).thenReturn(new IERSchema[]{
            schema 
         });
@@ -62,6 +61,7 @@ public class AttributeConverterTest {
         });
         when(domain.getName()).thenReturn("address");
         when(domain.getChildren()).thenReturn(new IERDomain[]{});
+        converter = new AttributeConverter(editor, erModel);
     }
 
     @Test(expected=IllegalArgumentException.class)
