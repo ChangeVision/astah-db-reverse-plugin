@@ -2,3 +2,4 @@
 .project
 .settings/
 target/
+*/**/h2.lock.db
