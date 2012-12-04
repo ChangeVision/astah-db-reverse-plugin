@@ -146,25 +146,8 @@ public class DBToProject {
 				fkInfo.put(tInfo.getName(), aInfo);
 				continue;
 			}
-			IERAttribute attri = attributeConverter.convert(entity,aInfo);
-			if (attri != null) {
-				setAttributeInfo(attri, aInfo);
-			}
+			attributeConverter.convert(entity,aInfo);
 		}
-	}
-
-	private void setAttributeInfo(IERAttribute attri, AttributeInfo aInfo) throws InvalidEditingException {
-		attri.setPrimaryKey(aInfo.isPK());
-		attri.setNotNull(aInfo.isPK() ? true : aInfo.isNotNull());
-		attri.setDefaultValue(aInfo.getDefaultValue());
-		attri.setDefinition(aInfo.getDefinition());
-		String aLen = aInfo.getLength();
-		String aPre = aInfo.getPrecision();
-		StringBuilder lengthPrecision = new StringBuilder();
-		lengthPrecision.append(aLen);
-		lengthPrecision.append(("".equals(aLen) || "".equals(aPre)) ? "" : ",");
-		lengthPrecision.append(aPre);
-		attri.setLengthPrecision(lengthPrecision.toString());
 	}
 
 	private IERDomain createDomain(DomainInfo dmInfo) throws InvalidEditingException {

@@ -125,6 +125,14 @@ public class AttributeInfo {
 	public void setFK(boolean isFK) {
 		this.isFK = isFK;
 	}
+	
+	public String getLengthPrecision(){
+        StringBuilder lengthPrecision = new StringBuilder();
+        lengthPrecision.append(length);
+        lengthPrecision.append(("".equals(length) || "".equals(precision)) ? "" : ",");
+        lengthPrecision.append(precision);
+	    return lengthPrecision.toString();
+	}
 
     @Override
     public String toString() {

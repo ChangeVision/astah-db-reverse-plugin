@@ -27,6 +27,22 @@ public class AttributeConverter {
     public IERAttribute convert(IEREntity owner, AttributeInfo attributeInfo) throws InvalidEditingException {
         if(attributeInfo == null) throw new IllegalArgumentException("argument is null");
         if(owner == null) throw new IllegalArgumentException("owner is null");
+        IERAttribute converted = doConvert(owner, attributeInfo);
+        if(converted == null) return null;
+        setAttributeInfo(converted,attributeInfo);
+        return converted;
+    }
+
+    private void setAttributeInfo(IERAttribute converted, AttributeInfo attributeInfo) throws InvalidEditingException {
+        converted.setPrimaryKey(attributeInfo.isPK());
+        converted.setNotNull(attributeInfo.isPK() ? true : attributeInfo.isNotNull());
+        converted.setDefaultValue(attributeInfo.getDefaultValue());
+        converted.setDefinition(attributeInfo.getDefinition());
+        converted.setLengthPrecision(attributeInfo.getLengthPrecision());
+    }
+
+    private IERAttribute doConvert(IEREntity owner, AttributeInfo attributeInfo)
+            throws InvalidEditingException {
         IERAttribute converted = convertByDomain(owner, attributeInfo);
         if(converted != null) return converted;
         return convertByDataType(owner, attributeInfo);

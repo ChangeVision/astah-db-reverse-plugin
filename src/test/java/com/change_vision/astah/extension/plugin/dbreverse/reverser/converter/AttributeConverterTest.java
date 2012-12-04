@@ -21,6 +21,8 @@ import com.change_vision.jude.api.inf.model.IERSchema;
 
 public class AttributeConverterTest {
     
+    private static final String CREATE_ATTRIBUTE_NAME = "hoge";
+
     private AttributeConverter converter;
 
     @Mock
@@ -80,28 +82,89 @@ public class AttributeConverterTest {
     
     @Test
     public void convertAttributeByDataType() throws Exception {
-        String attributeName = "hoge";
-        when(editor.createERAttribute(entity, attributeName , attributeName, dataType)).thenReturn(attribute);
-        AttributeInfo attributeInfo = new AttributeInfo();
-        attributeInfo.setName(attributeName);
-        attributeInfo.getDataType().setName("int");
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        AttributeInfo attributeInfo = createAttributeInfo();
         
         IERAttribute attribute = converter.convert(entity,attributeInfo);
         assertThat(attribute,is(notNullValue()));
-        verify(editor).createERAttribute(entity, attributeName , attributeName, dataType);
+        verify(editor).createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType);
     }
     
     @Test
     public void convertAttributeByDomain() throws Exception {
-        String attributeName = "hoge";
-        when(editor.createERAttribute(entity, attributeName , attributeName, domain)).thenReturn(attribute);
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, domain)).thenReturn(attribute);
+        
         AttributeInfo attributeInfo = new AttributeInfo();
-        attributeInfo.setName(attributeName);
+        attributeInfo.setName(CREATE_ATTRIBUTE_NAME);
         attributeInfo.getDomain().setName("address");
         
         IERAttribute attribute = converter.convert(entity,attributeInfo);
         assertThat(attribute,is(notNullValue()));
-        verify(editor).createERAttribute(entity, attributeName , attributeName, domain);
+        verify(editor).createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, domain);
+    }
+    
+    @Test
+    public void setPKAfterConverted() throws Exception {
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        
+        AttributeInfo attributeInfo = createAttributeInfo();
+        attributeInfo.setPK(true);
+        
+        IERAttribute attribute = converter.convert(entity,attributeInfo);
+        verify(attribute).setPrimaryKey(true);
+        verify(attribute).setNotNull(true);
+    }
+    
+    @Test
+    public void setNotNullAfterConverted() throws Exception {
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        
+        AttributeInfo attributeInfo = createAttributeInfo();
+        attributeInfo.setNotNull(true);
+        
+        IERAttribute attribute = converter.convert(entity,attributeInfo);
+        verify(attribute).setNotNull(true);
+    }
+
+    @Test
+    public void setDefaultValueAfterConverted() throws Exception {
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        
+        AttributeInfo attributeInfo = createAttributeInfo();
+        attributeInfo.setDefaultValue("default");
+        
+        IERAttribute attribute = converter.convert(entity,attributeInfo);
+        verify(attribute).setDefaultValue("default");
+    }
+    
+    @Test
+    public void setDefinitionAfterConverted() throws Exception {
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        
+        AttributeInfo attributeInfo = createAttributeInfo();
+        attributeInfo.setDefinition("definition");
+        
+        IERAttribute attribute = converter.convert(entity,attributeInfo);
+        verify(attribute).setDefinition("definition");
+    }
+    
+    @Test
+    public void setLengthPrecisionAfterConverted() throws Exception {
+        when(editor.createERAttribute(entity, CREATE_ATTRIBUTE_NAME , CREATE_ATTRIBUTE_NAME, dataType)).thenReturn(attribute);
+        
+        AttributeInfo attributeInfo = createAttributeInfo();
+        attributeInfo.setLength("10");
+        attributeInfo.setPrecision("10");
+        
+        IERAttribute attribute = converter.convert(entity,attributeInfo);
+        verify(attribute).setLengthPrecision("10,10");
+    }
+
+    private AttributeInfo createAttributeInfo() {
+        AttributeInfo attributeInfo = new AttributeInfo();
+        attributeInfo.setName(CREATE_ATTRIBUTE_NAME);
+        attributeInfo.getDataType().setName("int");
+        return attributeInfo;
     }
     
 }
