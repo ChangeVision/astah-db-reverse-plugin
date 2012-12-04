@@ -11,6 +11,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.AttributeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.TableConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
@@ -55,6 +56,8 @@ public class DBToProject {
 	
 	private TableConverter tableConverter;
 
+    private AttributeConverter attributeConverter;
+
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
 		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
@@ -72,6 +75,7 @@ public class DBToProject {
 			TransactionManager.beginTransaction();
 	        erModel = editor.createERModel(project, "ER Model");
 	        tableConverter = new TableConverter(editor,erModel.getSchemata()[0]);
+            attributeConverter = new AttributeConverter(editor, erModel);
 			importTable(tables);
 			importRelationships(relationships);
 			showTableCount(tables.size());
@@ -142,7 +146,7 @@ public class DBToProject {
 				fkInfo.put(tInfo.getName(), aInfo);
 				continue;
 			}
-			IERAttribute attri = createAttribute(aInfo, entity);
+			IERAttribute attri = attributeConverter.convert(entity,aInfo);
 			if (attri != null) {
 				setAttributeInfo(attri, aInfo);
 			}
