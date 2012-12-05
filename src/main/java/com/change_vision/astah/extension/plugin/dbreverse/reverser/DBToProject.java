@@ -12,7 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.AttributeConverter;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DatatypeConverter;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DomainConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.TableConverter;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DatatypeFinder;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DomainFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
@@ -58,6 +62,14 @@ public class DBToProject {
 
     private AttributeConverter attributeConverter;
 
+    private DomainFinder domainFinder;
+
+    private DomainConverter domainConverter;
+
+    private DatatypeFinder datatypeFinder;
+
+    private DatatypeConverter datatypeConverter;
+
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
 		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
@@ -74,8 +86,13 @@ public class DBToProject {
 		try {
 			TransactionManager.beginTransaction();
 	        erModel = editor.createERModel(project, "ER Model");
-	        tableConverter = new TableConverter(editor,erModel.getSchemata()[0]);
+	        IERSchema schema = erModel.getSchemata()[0];
+            tableConverter = new TableConverter(editor,schema);
             attributeConverter = new AttributeConverter(editor, erModel);
+            domainFinder = new DomainFinder(schema);
+            domainConverter = new DomainConverter(editor, erModel);
+            datatypeFinder = new DatatypeFinder(schema);
+            datatypeConverter = new DatatypeConverter(editor, erModel);
 			importTable(tables);
 			importRelationships(relationships);
 			showTableCount(tables.size());
@@ -148,70 +165,6 @@ public class DBToProject {
 			}
 			attributeConverter.convert(entity,aInfo);
 		}
-	}
-
-	private IERDomain createDomain(DomainInfo dmInfo) throws InvalidEditingException {
-		IERDomain iDomain = getDomain(dmInfo.getName());
-		if (iDomain == null) {
-			IERDatatype datatype = getDatatype(dmInfo.getDatatypeName());
-			if (datatype == null) {
-				datatype = editor.createERDatatype(erModel, dmInfo.getDatatypeName());
-			}
-			iDomain = editor.createERDomain(erModel, null, dmInfo.getName(), dmInfo.getName(), datatype);
-		}
-		// More api should be added in IERDomain for setting domain info
-		return iDomain;
-	}
-
-	private IERDatatype createERDatatype(DatatypeInfo dtInfo) throws InvalidEditingException {
-		IERDatatype datatype = getDatatype(dtInfo.getName());
-		if (datatype == null) {
-			datatype = editor.createERDatatype(erModel, dtInfo.getName());
-			datatype.setLengthConstraint(dtInfo.getLengthConstraint());
-			datatype.setPrecisionConstraint(dtInfo.getPrecisionConstraint());
-		}
-		String dLen = dtInfo.getDefaultLength();
-		String dPre = dtInfo.getDefaultPrecision();
-		StringBuilder lengthPrecision = new StringBuilder();
-		lengthPrecision.append(dLen);
-		lengthPrecision.append(("".equals(dLen) || "".equals(dPre)) ? "" : ",");
-		lengthPrecision.append(dPre);
-		if (lengthPrecision.length() > 0) {
-			datatype.setDefaultLengthPrecision(lengthPrecision.toString());
-		}
-		datatype.setDescription(dtInfo.getDescription());
-
-		return datatype;
-	}
-
-	private IERDomain getDomain(String name) {
-		IERDomain defaultDomain = erModel.getSchemata()[0].getDomains()[0];
-		for (IERDomain domain : getAllChildDomains(defaultDomain)) {
-			if (domain.getName().equalsIgnoreCase(name)) {
-				return domain;
-			}
-		}
-		return null;
-	}
-
-	private List<IERDomain> getAllChildDomains(IERDomain domain) {
-		List<IERDomain> domains = new ArrayList<IERDomain>();
-		domains.add(domain);
-		int size = domain.getChildren().length;
-		for (int i = 0; i < size; i++) {
-			domains.addAll(getAllChildDomains(domain.getChildren()[i]));
-		}
-		return domains;
-	}
-
-	private IERDatatype getDatatype(String name) {
-		IERDatatype[] datatypes = erModel.getSchemata()[0].getDatatypes();
-		for (IERDatatype datatype : datatypes) {
-			if (datatype.getName().equalsIgnoreCase(name)) {
-				return datatype;
-			}
-		}
-		return null;
 	}
 
 	private void importRelationships(List<ERRelationshipInfo> relationships) throws InvalidEditingException {
@@ -314,27 +267,55 @@ public class DBToProject {
 		for (int i = 0; i < foreignKeys.length; i++) {
 			IERAttribute attribute = foreignKeys[i];
 			logger.debug("Created attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
-			DomainInfo dmInfo = getFKDomainInfo(child.getName());
-			DatatypeInfo dtInfo = getFKDatatypeInfo(child.getName());
-			AttributeInfo aInfo = getFKAttributeInfo(child.getName());
-			if (dmInfo != null && !"".equals(dmInfo.getName())) {
-				IERDomain iDomain = createDomain(dmInfo);
-				attribute.setDomain(iDomain);
-			} else if (dtInfo != null && !"".equals(dtInfo.getName())) {
-				IERDatatype datatype = createERDatatype(dtInfo);
-				attribute.setDatatype(datatype);
-				attribute.setDefaultValue(aInfo.getDefaultValue());
-				String aLen = aInfo.getLength();
-				String aPre = aInfo.getPrecision();
-				StringBuilder lengthPrecision = new StringBuilder();
-				lengthPrecision.append(aLen);
-				lengthPrecision.append(("".equals(aLen) || "".equals(aPre)) ? "" : ",");
-				lengthPrecision.append(aPre);
-				attribute.setLengthPrecision(lengthPrecision.toString());
-				logger.debug("Chaged attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
+			AttributeInfo attributeInfo = getFKAttributeInfo(child.getName());
+			DomainInfo domainInfo = attributeInfo.getDomain();
+			if(domainInfo != null) {
+			    IERDomain domain = findOrConvertDomain(domainInfo);
+                if(domain != null){
+                    attribute.setDomain(domain);
+                    logger.debug("Chaged attribute:=" + attribute.getName() + " ; " + attribute.getDomain().getName());
+                    continue;
+                }
+            }
+			DatatypeInfo datatypeInfo = attributeInfo.getDataType();
+			if(datatypeInfo != null){
+			    IERDatatype datatype = findOrConvertDatatype(datatypeInfo);
+			    if(datatype != null){
+			        attribute.setDatatype(datatype);
+			        String defaultValue = attributeInfo.getDefaultValue();
+			        attribute.setDefaultValue(defaultValue);
+			        String lengthPrecision = attributeInfo.getLengthPrecision();
+			        attribute.setLengthPrecision(lengthPrecision);
+			        logger.debug("Chaged attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
+			    }
 			}
 		}
 	}
+
+    private IERDatatype findOrConvertDatatype(DatatypeInfo datatypeInfo)
+            throws InvalidEditingException {
+        IERDatatype datatype = null;
+        String datatypeName = datatypeInfo.getName();
+        if(!"".equals(datatypeName)){
+            datatype = datatypeFinder.find(datatypeName);
+            if(datatype == null) {
+                datatype = datatypeConverter.convert(datatypeInfo);
+            }
+        }
+        return datatype;
+    }
+
+    private IERDomain findOrConvertDomain(DomainInfo domainInfo) throws InvalidEditingException {
+        IERDomain domain = null;
+        String domainName = domainInfo.getName();
+        if (!"".equals(domainName)){
+            domain = domainFinder.find(domainName);
+            if(domain == null){
+                domain = domainConverter.convert(domainInfo);
+            }
+        }
+        return domain;
+    }
 
 	private void checkRelationship(IEREntity parent, IEREntity child,
 			ERRelationshipInfo errInfo, IERRelationship relationship)
@@ -481,20 +462,6 @@ public class DBToProject {
 			return fkInfo.get(tableName).isNotNull();
 		}
 		return false;
-	}
-
-	private DomainInfo getFKDomainInfo(String tableName) {
-		if (fkInfo.keySet().contains(tableName)) {
-			return fkInfo.get(tableName).getDomain();
-		}
-		return null;
-	}
-
-	private DatatypeInfo getFKDatatypeInfo(String tableName) {
-		if (fkInfo.keySet().contains(tableName)) {
-			return fkInfo.get(tableName).getDataType();
-		}
-		return null;
 	}
 
 	private AttributeInfo getFKAttributeInfo(String tableName) {
