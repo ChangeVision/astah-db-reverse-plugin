@@ -50,7 +50,6 @@ public class DBReaderTest {
         reader.close();
     }
 
-    
     @Test
     @Ignore(value="NullPointerExceptionが投げられる")
     public void connectWithNull() throws MalformedURLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
