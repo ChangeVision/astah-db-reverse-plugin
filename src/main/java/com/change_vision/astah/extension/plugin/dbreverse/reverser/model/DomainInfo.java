@@ -88,5 +88,47 @@ public class DomainInfo {
                 + defaultLength + ", defaultPrecision=" + defaultPrecision + ", defaultValue="
                 + defaultValue + ", isNotNull=" + isNotNull + ", definition=" + definition + "]";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((datatypeName == null) ? 0 : datatypeName.hashCode());
+        result = prime * result + ((defaultLength == null) ? 0 : defaultLength.hashCode());
+        result = prime * result + ((defaultPrecision == null) ? 0 : defaultPrecision.hashCode());
+        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + (isNotNull ? 1231 : 1237);
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        DomainInfo other = (DomainInfo) obj;
+        if (datatypeName == null) {
+            if (other.datatypeName != null) return false;
+        } else if (!datatypeName.equals(other.datatypeName)) return false;
+        if (defaultLength == null) {
+            if (other.defaultLength != null) return false;
+        } else if (!defaultLength.equals(other.defaultLength)) return false;
+        if (defaultPrecision == null) {
+            if (other.defaultPrecision != null) return false;
+        } else if (!defaultPrecision.equals(other.defaultPrecision)) return false;
+        if (defaultValue == null) {
+            if (other.defaultValue != null) return false;
+        } else if (!defaultValue.equals(other.defaultValue)) return false;
+        if (definition == null) {
+            if (other.definition != null) return false;
+        } else if (!definition.equals(other.definition)) return false;
+        if (isNotNull != other.isNotNull) return false;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        return true;
+    }
 	
 }

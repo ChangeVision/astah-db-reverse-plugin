@@ -97,5 +97,41 @@ public class ERRelationshipInfo extends RelationshipInfo {
                 + parentTable + ", childTable=" + childTable + ", definition=" + definition
                 + ", keys=" + keys + "]";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((erIndex == null) ? 0 : erIndex.hashCode());
+        result = prime * result + (isIdentifying ? 1231 : 1237);
+        result = prime * result + (isMultiToMulti ? 1231 : 1237);
+        result = prime * result + (isNonIdentifying ? 1231 : 1237);
+        result = prime * result + (isParentRequired ? 1231 : 1237);
+        result = prime * result + ((verbPhraseChild == null) ? 0 : verbPhraseChild.hashCode());
+        result = prime * result + ((verbPhraseParent == null) ? 0 : verbPhraseParent.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        ERRelationshipInfo other = (ERRelationshipInfo) obj;
+        if (erIndex == null) {
+            if (other.erIndex != null) return false;
+        } else if (!erIndex.equals(other.erIndex)) return false;
+        if (isIdentifying != other.isIdentifying) return false;
+        if (isMultiToMulti != other.isMultiToMulti) return false;
+        if (isNonIdentifying != other.isNonIdentifying) return false;
+        if (isParentRequired != other.isParentRequired) return false;
+        if (verbPhraseChild == null) {
+            if (other.verbPhraseChild != null) return false;
+        } else if (!verbPhraseChild.equals(other.verbPhraseChild)) return false;
+        if (verbPhraseParent == null) {
+            if (other.verbPhraseParent != null) return false;
+        } else if (!verbPhraseParent.equals(other.verbPhraseParent)) return false;
+        return true;
+    }
 	
 }

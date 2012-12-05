@@ -67,5 +67,45 @@ public class ConnectionInfo {
         return "ConnectionInfo [name=" + name + ", jdbcurl=" + jdbcurl + ", classname=" + classname
                 + ", pathfile=" + pathfile + ", login=" + login + ", password=" + password + "]";
     }
-	
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((classname == null) ? 0 : classname.hashCode());
+        result = prime * result + ((jdbcurl == null) ? 0 : jdbcurl.hashCode());
+        result = prime * result + ((login == null) ? 0 : login.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((password == null) ? 0 : password.hashCode());
+        result = prime * result + ((pathfile == null) ? 0 : pathfile.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        ConnectionInfo other = (ConnectionInfo) obj;
+        if (classname == null) {
+            if (other.classname != null) return false;
+        } else if (!classname.equals(other.classname)) return false;
+        if (jdbcurl == null) {
+            if (other.jdbcurl != null) return false;
+        } else if (!jdbcurl.equals(other.jdbcurl)) return false;
+        if (login == null) {
+            if (other.login != null) return false;
+        } else if (!login.equals(other.login)) return false;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        if (password == null) {
+            if (other.password != null) return false;
+        } else if (!password.equals(other.password)) return false;
+        if (pathfile == null) {
+            if (other.pathfile != null) return false;
+        } else if (!pathfile.equals(other.pathfile)) return false;
+        return true;
+    }
+    
 }

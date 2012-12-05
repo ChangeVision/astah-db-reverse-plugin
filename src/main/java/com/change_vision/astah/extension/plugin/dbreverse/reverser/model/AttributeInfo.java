@@ -141,5 +141,59 @@ public class AttributeInfo {
                 + length + ", precision=" + precision + ", definition=" + definition + ", isPK="
                 + isPK + ", isFK=" + isFK + ", isNotNull=" + isNotNull + "]";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
+        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + ((domain == null) ? 0 : domain.hashCode());
+        result = prime * result + (isFK ? 1231 : 1237);
+        result = prime * result + (isNotNull ? 1231 : 1237);
+        result = prime * result + (isPK ? 1231 : 1237);
+        result = prime * result + ((length == null) ? 0 : length.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((parentTable == null) ? 0 : parentTable.hashCode());
+        result = prime * result + ((precision == null) ? 0 : precision.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        AttributeInfo other = (AttributeInfo) obj;
+        if (dataType == null) {
+            if (other.dataType != null) return false;
+        } else if (!dataType.equals(other.dataType)) return false;
+        if (defaultValue == null) {
+            if (other.defaultValue != null) return false;
+        } else if (!defaultValue.equals(other.defaultValue)) return false;
+        if (definition == null) {
+            if (other.definition != null) return false;
+        } else if (!definition.equals(other.definition)) return false;
+        if (domain == null) {
+            if (other.domain != null) return false;
+        } else if (!domain.equals(other.domain)) return false;
+        if (isFK != other.isFK) return false;
+        if (isNotNull != other.isNotNull) return false;
+        if (isPK != other.isPK) return false;
+        if (length == null) {
+            if (other.length != null) return false;
+        } else if (!length.equals(other.length)) return false;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+        if (parentTable == null) {
+            if (other.parentTable != null) return false;
+        } else if (!parentTable.equals(other.parentTable)) return false;
+        if (precision == null) {
+            if (other.precision != null) return false;
+        } else if (!precision.equals(other.precision)) return false;
+        return true;
+    }
 	
 }
