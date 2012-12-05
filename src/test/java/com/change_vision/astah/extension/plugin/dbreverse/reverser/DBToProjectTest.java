@@ -16,6 +16,7 @@ import org.junit.rules.TemporaryFolder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
+import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.model.IEREntity;
 import com.change_vision.jude.api.inf.model.IERModel;
 import com.change_vision.jude.api.inf.model.IERSchema;
@@ -50,6 +51,9 @@ public class DBToProjectTest {
 	
 	@After
     public void after() throws Exception {
+	    if (TransactionManager.isInTransaction()) {
+            TransactionManager.abortTransaction();
+        }
         reader.close();
     }
 
