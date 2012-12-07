@@ -98,6 +98,7 @@ public class DBToProject {
 			showTableCount(tables.size());
 			TransactionManager.endTransaction();
 		} catch (BadTransactionException e) {
+		    logger.error("BadTransactionException is occurred. Transaction is aborted.",e);
 			TransactionManager.abortTransaction();
 		}
 		prjAccessor.save();
