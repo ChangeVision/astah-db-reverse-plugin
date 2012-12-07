@@ -15,6 +15,7 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.Att
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DatatypeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DomainConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.TableConverter;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.AttributeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DatatypeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DomainFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
@@ -70,6 +71,8 @@ public class DBToProject {
 
     private DatatypeConverter datatypeConverter;
 
+    private AttributeFinder attributeFinder;
+
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
 		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
@@ -88,6 +91,7 @@ public class DBToProject {
 	        erModel = editor.createERModel(project, "ER Model");
 	        IERSchema schema = erModel.getSchemata()[0];
             tableConverter = new TableConverter(editor,schema);
+            attributeFinder = new AttributeFinder();
             attributeConverter = new AttributeConverter(editor, erModel);
             domainFinder = new DomainFinder(schema);
             domainConverter = new DomainConverter(editor, erModel);
@@ -143,7 +147,7 @@ public class DBToProject {
 		List<IERAttribute> attrs = new ArrayList<IERAttribute>();
 		List<String> missed = new ArrayList<String>();
 		for (String attrName : attrNames) {
-			IERAttribute erAttr = getAttribute(entity, attrName);
+			IERAttribute erAttr = attributeFinder.find(entity, attrName);
 			if (erAttr == null) {
 				missed.add(attrName);
 			} else {
@@ -191,8 +195,9 @@ public class DBToProject {
 		IERSubtypeRelationship subRelationship =
 			editor.createSubtypeRelationship(parent, child, name, name);
 		subRelationship.setConclusive(subInfo.isConclusive());
-		subRelationship.setDiscriminatorAttribute(
-				getAttribute(parent, subInfo.getDiscriminatorAttribute()));
+		String discriminatorAttribute = subInfo.getDiscriminatorAttribute();
+        IERAttribute attributes = attributeFinder.find(parent, discriminatorAttribute);
+        subRelationship.setDiscriminatorAttribute(attributes);
 		subRelationship.setDefinition(subInfo.getDefinition());
 	}
 
@@ -391,7 +396,7 @@ public class DBToProject {
 				if (missedAttrs != null && missedAttrs.contains(pkName)) {
 					continue;
 				}
-				IERAttribute pk = getAttribute(parent, pkName);
+				IERAttribute pk = attributeFinder.find(parent, pkName);
 				pks.add(pk);
 			}
 			if (index.isUnique() && Arrays.asList(index.getERAttributes()).containsAll(pks)) {
@@ -406,8 +411,8 @@ public class DBToProject {
 			ERRelationshipInfo errInfo) throws InvalidEditingException {
 		for (String parentKeyName : errInfo.getKeys().keySet()) {
 			String childKeyName = errInfo.getKeys().get(parentKeyName);
-			IERAttribute parentKey = getAttribute(parent, parentKeyName);
-			IERAttribute childKey = getAttribute(child, childKeyName);
+			IERAttribute parentKey = attributeFinder.find(parent, parentKeyName);
+			IERAttribute childKey = attributeFinder.find(child, childKeyName);
 			if (parentKey != null) {
 				IERAttribute fk = getReferenceFK(relationship, parentKey);
 				if (fk == null) {
@@ -431,18 +436,6 @@ public class DBToProject {
 		for (IERAttribute fk : pk.getReferencedForeignKeys()) {
 			if (fk.getReferencedRelationship() == relationship) {
 				return fk;
-			}
-		}
-		return null;
-	}
-
-	private IERAttribute getAttribute(IEREntity entity, String name) {
-		List<IERAttribute> attributes = new ArrayList<IERAttribute>();
-		attributes.addAll(Arrays.asList(entity.getPrimaryKeys()));
-		attributes.addAll(Arrays.asList(entity.getNonPrimaryKeys()));
-		for (IERAttribute erAttribute : attributes) {
-			if (erAttribute.getName().equals(name)) {
-				return erAttribute;
 			}
 		}
 		return null;
