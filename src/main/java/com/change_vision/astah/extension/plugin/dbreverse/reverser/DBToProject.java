@@ -18,6 +18,7 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.Tab
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.AttributeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DatatypeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DomainFinder;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.EntityFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DatatypeInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
@@ -73,6 +74,8 @@ public class DBToProject {
 
     private AttributeFinder attributeFinder;
 
+    private EntityFinder entityFinder;
+
 	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
 		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
@@ -90,7 +93,8 @@ public class DBToProject {
 			TransactionManager.beginTransaction();
 	        erModel = editor.createERModel(project, "ER Model");
 	        IERSchema schema = erModel.getSchemata()[0];
-            tableConverter = new TableConverter(editor,schema);
+            entityFinder = new EntityFinder(schema);
+	        tableConverter = new TableConverter(editor,schema);
             attributeFinder = new AttributeFinder();
             attributeConverter = new AttributeConverter(editor, erModel);
             domainFinder = new DomainFinder(schema);
@@ -176,8 +180,8 @@ public class DBToProject {
 		RelationshipInfo rInfo = null;
 		for (Iterator<ERRelationshipInfo> it = relationships.iterator(); it.hasNext();) {
 			rInfo = it.next();
-			IEREntity parent = getEntity(rInfo.getParentTable());
-			IEREntity child = getEntity(rInfo.getChildTable());
+			IEREntity parent = entityFinder.find(rInfo.getParentTable());
+			IEREntity child = entityFinder.find(rInfo.getChildTable());
 			if (parent == null || child == null) {
 				continue;
 			}
@@ -436,16 +440,6 @@ public class DBToProject {
 		for (IERAttribute fk : pk.getReferencedForeignKeys()) {
 			if (fk.getReferencedRelationship() == relationship) {
 				return fk;
-			}
-		}
-		return null;
-	}
-
-	private IEREntity getEntity(String name) {
-		IERSchema defaultSchema = erModel.getSchemata()[0];
-		for (IEREntity erEntity : defaultSchema.getEntities()) {
-			if (erEntity.getName().equals(name)) {
-				return erEntity;
 			}
 		}
 		return null;

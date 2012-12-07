@@ -5,8 +5,13 @@ import com.change_vision.jude.api.inf.model.IERSchema;
 
 public class EntityFinder {
 
-    public IEREntity find(IERSchema schema, String name) {
-        if (schema == null) throw new IllegalArgumentException("schema is null");
+    private IERSchema schema;
+
+    public EntityFinder(IERSchema schema) {
+        this.schema = schema;
+    }
+
+    public IEREntity find(String name) {
         if (name == null) throw new IllegalArgumentException("name is null");
         for (IEREntity entity : schema.getEntities()) {
             if (entity.getName().equals(name)) {

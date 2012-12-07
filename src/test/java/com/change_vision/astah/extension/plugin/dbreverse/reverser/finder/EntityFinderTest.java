@@ -30,23 +30,18 @@ public class EntityFinderTest {
                 entity
         });
         when(entity.getName()).thenReturn("entity0");
-        finder = new EntityFinder();
+        finder = new EntityFinder(schema);
     }
     
     @Test
     public void find() throws Exception {
-        IEREntity entity = finder.find(schema, "entity0");
+        IEREntity entity = finder.find("entity0");
         assertThat(entity,is(notNullValue()));
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void findWithNullName() throws Exception {
-        finder.find(schema, null);
+        finder.find(null);
     }
     
-    @Test(expected=IllegalArgumentException.class)
-    public void findWithNullSchema() throws Exception {
-        finder.find(null,"entity0");
-    }
-
 }
