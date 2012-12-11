@@ -24,7 +24,6 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.Datatyp
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
-import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.SubtypeRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
 import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
@@ -42,7 +41,6 @@ import com.change_vision.jude.api.inf.model.IERIndex;
 import com.change_vision.jude.api.inf.model.IERModel;
 import com.change_vision.jude.api.inf.model.IERRelationship;
 import com.change_vision.jude.api.inf.model.IERSchema;
-import com.change_vision.jude.api.inf.model.IERSubtypeRelationship;
 import com.change_vision.jude.api.inf.model.IModel;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
@@ -202,18 +200,6 @@ public class DBToProject {
 			}
 			createERRelationship(parent, child, rInfo);
 		}
-	}
-
-	private void createSubtypeRelationship(IEREntity parent,
-			IEREntity child, SubtypeRelationshipInfo subInfo) throws InvalidEditingException {
-		String name = subInfo.getName();
-		IERSubtypeRelationship subRelationship =
-			editor.createSubtypeRelationship(parent, child, name, name);
-		subRelationship.setConclusive(subInfo.isConclusive());
-		String discriminatorAttribute = subInfo.getDiscriminatorAttribute();
-        IERAttribute attributes = attributeFinder.find(parent, discriminatorAttribute);
-        subRelationship.setDiscriminatorAttribute(attributes);
-		subRelationship.setDefinition(subInfo.getDefinition());
 	}
 
 	private void createERRelationship(IEREntity parent,
