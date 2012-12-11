@@ -58,8 +58,6 @@ public class DBToProject {
 
     private Map<IEREntity,List<IndexInfo>> entityIndexMap;
     
-    private Map<List<String>,List<String>> attributeMissedAttributeMap;
-    
     private Map<IndexInfo,List<String>> indexAttributesMap;
     
     private Map<IERIndex,List<String>> erindexAttributesMap;
@@ -93,7 +91,6 @@ public class DBToProject {
 		fkInfo = new HashMap<String, AttributeInfo>();
 		entityIndexMap = new HashMap<IEREntity, List<IndexInfo>>();
 		indexAttributesMap = new HashMap<IndexInfo, List<String>>();
-		attributeMissedAttributeMap = new HashMap<List<String>, List<String>>();
 		erindexAttributesMap = new HashMap<IERIndex, List<String>>();
 
 		try {
@@ -141,15 +138,14 @@ public class DBToProject {
 		for (IndexInfo indexInfo : tInfo.getIndexes()) {
 			List<String> attributes = indexInfo.getAttributes();
             IERAttribute[] erAttributes =  getAttributes(entity, attributes);
-			List<String> value = attributeMissedAttributeMap.get(attributes);
+			List<String> missedAttributes = getMissedAttributes(entity, attributes);
             if (erAttributes.length != 0) {
 				IERIndex newIndex = editor.createERIndex(indexInfo.getName(), entity, indexInfo.isUnique(), true, erAttributes);
-				erindexAttributesMap.put(newIndex, value);
+				erindexAttributesMap.put(newIndex, missedAttributes);
 			} else {
-			    indexAttributesMap.put(indexInfo, value);
+			    indexAttributesMap.put(indexInfo, missedAttributes);
 				missedInfo.add(indexInfo);
 			}
-            attributeMissedAttributeMap.remove(attributes);
 		}
 		if (!missedInfo.isEmpty()) {
 			entityIndexMap.put(entity, missedInfo);
@@ -158,22 +154,28 @@ public class DBToProject {
 
 	private IERAttribute[] getAttributes(IEREntity entity, List<String> attrNames) {
 		List<IERAttribute> attrs = new ArrayList<IERAttribute>();
-		List<String> missed = new ArrayList<String>();
 		for (String attrName : attrNames) {
 			IERAttribute erAttr = attributeFinder.find(entity, attrName);
-			if (erAttr == null) {
-				missed.add(attrName);
-			} else {
-				attrs.add(erAttr);
+			if(erAttr != null){
+			    attrs.add(erAttr);
 			}
-		}
-		if (!missed.isEmpty()) {
-		    attributeMissedAttributeMap.put(attrNames, missed);
 		}
 
 		return (IERAttribute[]) attrs.toArray(new IERAttribute[0]);
 	}
 
+	private List<String> getMissedAttributes(IEREntity entity, List<String> attrNames) {
+        List<String> missed = new ArrayList<String>();
+        for (String attrName : attrNames) {
+            IERAttribute erAttr = attributeFinder.find(entity, attrName);
+            if (erAttr == null) {
+                missed.add(attrName);
+            }
+        }
+        return missed;
+    }
+
+	
 	private void addAttributes(TableInfo tInfo, IEREntity entity)
 			throws InvalidEditingException {
 		for (AttributeInfo aInfo : tInfo.getAttributes()) {
@@ -359,17 +361,17 @@ public class DBToProject {
 			for (IndexInfo indexInfo : indexInfoes) {
 				List<String> attributes = indexAttributesMap.get(indexInfo);
 				IERAttribute[] erAttrs = getAttributes(entity, attributes);
+				List<String> missedAttributes = getMissedAttributes(entity, attributes);
 				if (erAttrs.length != 0) {
 					IERIndex newIndex = editor.createERIndex(indexInfo.getName(), entity, indexInfo.isUnique(), true, erAttrs);
 					indexAttributesMap.remove(indexInfo);
 					if (erAttrs.length != attributes.size()) {
-					    erindexAttributesMap.put(newIndex, attributeMissedAttributeMap.get(attributes));
+					    erindexAttributesMap.put(newIndex, missedAttributes);
 					}
 				} else {
-					indexAttributesMap.put(indexInfo, attributeMissedAttributeMap.get(attributes));
+					indexAttributesMap.put(indexInfo, missedAttributes);
 					missedInfo.add(indexInfo);
 				}
-				attributeMissedAttributeMap.remove(attributes);
 			}
 			entityIndexMap.remove(entity);
 			if (!missedInfo.isEmpty()) {
