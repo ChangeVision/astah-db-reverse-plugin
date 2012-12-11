@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,6 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.Datatyp
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.DomainInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
-import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.RelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.SubtypeRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
@@ -58,8 +56,14 @@ public class DBToProject {
 
 	private Map<String, AttributeInfo> fkInfo;
 
-	private Map indexMap;
-	
+    private Map<IEREntity,List<IndexInfo>> entityIndexMap;
+    
+    private Map<List<String>,List<String>> attributeMissedAttributeMap;
+    
+    private Map<IndexInfo,List<String>> indexAttributesMap;
+    
+    private Map<IERIndex,List<String>> erindexAttributesMap;
+
 	private TableConverter tableConverter;
 
     private AttributeConverter attributeConverter;
@@ -87,7 +91,10 @@ public class DBToProject {
 		
 		editor = ModelEditorFactory.getERModelEditor();
 		fkInfo = new HashMap<String, AttributeInfo>();
-		indexMap = new HashMap();
+		entityIndexMap = new HashMap<IEREntity, List<IndexInfo>>();
+		indexAttributesMap = new HashMap<IndexInfo, List<String>>();
+		attributeMissedAttributeMap = new HashMap<List<String>, List<String>>();
+		erindexAttributesMap = new HashMap<IERIndex, List<String>>();
 
 		try {
 			TransactionManager.beginTransaction();
@@ -132,18 +139,20 @@ public class DBToProject {
 			throws InvalidEditingException {
 		List<IndexInfo> missedInfo = new ArrayList<IndexInfo>();
 		for (IndexInfo indexInfo : tInfo.getIndexes()) {
-			IERAttribute[] erAttributes =  getAttributes(entity, indexInfo.getAttributes());
-			if (erAttributes.length != 0) {
+			List<String> attributes = indexInfo.getAttributes();
+            IERAttribute[] erAttributes =  getAttributes(entity, attributes);
+			List<String> value = attributeMissedAttributeMap.get(attributes);
+            if (erAttributes.length != 0) {
 				IERIndex newIndex = editor.createERIndex(indexInfo.getName(), entity, indexInfo.isUnique(), true, erAttributes);
-				indexMap.put(newIndex, indexMap.get(indexInfo.getAttributes()));
+				erindexAttributesMap.put(newIndex, value);
 			} else {
-				indexMap.put(indexInfo, indexMap.get(indexInfo.getAttributes()));
+			    indexAttributesMap.put(indexInfo, value);
 				missedInfo.add(indexInfo);
 			}
-			indexMap.remove(indexInfo.getAttributes());
+            attributeMissedAttributeMap.remove(attributes);
 		}
 		if (!missedInfo.isEmpty()) {
-			indexMap.put(entity, missedInfo);
+			entityIndexMap.put(entity, missedInfo);
 		}
 	}
 
@@ -159,7 +168,7 @@ public class DBToProject {
 			}
 		}
 		if (!missed.isEmpty()) {
-			indexMap.put(attrNames, missed);
+		    attributeMissedAttributeMap.put(attrNames, missed);
 		}
 
 		return (IERAttribute[]) attrs.toArray(new IERAttribute[0]);
@@ -177,19 +186,18 @@ public class DBToProject {
 	}
 
 	private void importRelationships(List<ERRelationshipInfo> relationships) throws InvalidEditingException {
-		RelationshipInfo rInfo = null;
-		for (Iterator<ERRelationshipInfo> it = relationships.iterator(); it.hasNext();) {
-			rInfo = it.next();
+		for (ERRelationshipInfo rInfo : relationships) {
 			IEREntity parent = entityFinder.find(rInfo.getParentTable());
 			IEREntity child = entityFinder.find(rInfo.getChildTable());
-			if (parent == null || child == null) {
+			if (parent == null){
+			    logger.warn("can't convert relationship '{}'. The parent table '{}' is not found.",rInfo.getName(),rInfo.getParentTable());
+                continue;
+			}
+			if (child == null) {
+                logger.warn("can't convert relationship '{}'. The child table '{}' is not found.",rInfo.getName(),rInfo.getChildTable());
 				continue;
 			}
-			if (rInfo instanceof ERRelationshipInfo) {
-				createERRelationship(parent, child, (ERRelationshipInfo) rInfo);
-			} else if (rInfo instanceof SubtypeRelationshipInfo) {
-				createSubtypeRelationship(parent, child, (SubtypeRelationshipInfo) rInfo);
-			}
+			createERRelationship(parent, child, rInfo);
 		}
 	}
 
@@ -345,28 +353,27 @@ public class DBToProject {
 
 	private void addMissedIndex(IEREntity entity)
 			throws InvalidEditingException {
-		List indexInfoes = (List)indexMap.get(entity);
+		List<IndexInfo> indexInfoes = entityIndexMap.get(entity);
 		if (indexInfoes != null) {
-			List missedInfo = new ArrayList();
-			for (Iterator it = indexInfoes.iterator(); it.hasNext();) {
-				IndexInfo indexInfo = (IndexInfo) it.next();
-				List attributes = (List)indexMap.get(indexInfo);
+			List<IndexInfo> missedInfo = new ArrayList<IndexInfo>();
+			for (IndexInfo indexInfo : indexInfoes) {
+				List<String> attributes = indexAttributesMap.get(indexInfo);
 				IERAttribute[] erAttrs = getAttributes(entity, attributes);
 				if (erAttrs.length != 0) {
 					IERIndex newIndex = editor.createERIndex(indexInfo.getName(), entity, indexInfo.isUnique(), true, erAttrs);
-					indexMap.remove(indexInfo);
+					indexAttributesMap.remove(indexInfo);
 					if (erAttrs.length != attributes.size()) {
-						indexMap.put(newIndex, indexMap.get(attributes));
+					    erindexAttributesMap.put(newIndex, attributeMissedAttributeMap.get(attributes));
 					}
 				} else {
-					indexMap.put(indexInfo, indexMap.get(attributes));
+					indexAttributesMap.put(indexInfo, attributeMissedAttributeMap.get(attributes));
 					missedInfo.add(indexInfo);
 				}
-				indexMap.remove(attributes);
+				attributeMissedAttributeMap.remove(attributes);
 			}
-			indexMap.remove(entity);
+			entityIndexMap.remove(entity);
 			if (!missedInfo.isEmpty()) {
-				indexMap.put(entity, missedInfo);
+				entityIndexMap.put(entity, missedInfo);
 			}
 		}
 	}
@@ -375,7 +382,7 @@ public class DBToProject {
 			throws InvalidEditingException {
 		for (int i = 0; i < entity.getERIndices().length; i++) {
 			IERIndex index = entity.getERIndices()[i];
-			List attributes = (List)indexMap.get(index);
+			List<String> attributes = erindexAttributesMap.get(index);
 			if (attributes == null || attributes.isEmpty()) {
 				continue;
 			}
@@ -384,17 +391,17 @@ public class DBToProject {
 				index.addERAttribute(erAttrs[j]);
 			}
 			if (erAttrs.length != attributes.size()) {
-				indexMap.put(index, indexMap.get(attributes));
-				indexMap.remove(attributes);
+			    erindexAttributesMap.put(index, indexAttributesMap.get(attributes));
+			    indexAttributesMap.remove(attributes);
 			} else {
-				indexMap.remove(index);
+			    erindexAttributesMap.remove(index);
 			}
 		}
 	}
 
 	private IERIndex getKindOfRelationship(IEREntity parent, ERRelationshipInfo errInfo) {
 		for (IERIndex index : parent.getERIndices()) {
-			List missedAttrs = (List)indexMap.get(index);
+			List<String> missedAttrs = erindexAttributesMap.get(index);
 			List<IERAttribute> pks = new ArrayList<IERAttribute>();
 			for (String pkName : errInfo.getKeys().keySet()) {
 				if (missedAttrs != null && missedAttrs.contains(pkName)) {
