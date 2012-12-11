@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -382,8 +383,8 @@ public class DBToProject {
 
 	private void addMissedAttributes(IEREntity entity)
 			throws InvalidEditingException {
-		for (int i = 0; i < entity.getERIndices().length; i++) {
-			IERIndex index = entity.getERIndices()[i];
+		IERIndex[] erIndices = entity.getERIndices();
+        for (IERIndex index : erIndices) {
 			List<String> attributes = erindexAttributesMap.get(index);
 			if (attributes == null || attributes.isEmpty()) {
 				continue;
@@ -422,25 +423,35 @@ public class DBToProject {
 	private void renameForeignKey(IERRelationship relationship,
 			IEREntity parent, IEREntity child,
 			ERRelationshipInfo errInfo) throws InvalidEditingException {
-		for (String parentKeyName : errInfo.getKeys().keySet()) {
-			String childKeyName = errInfo.getKeys().get(parentKeyName);
+		Map<String, String> keys = errInfo.getKeys();
+        Set<String> keySet = keys.keySet();
+        for (String parentKeyName : keySet) {
 			IERAttribute parentKey = attributeFinder.find(parent, parentKeyName);
+			if (parentKey == null){
+			    continue;
+			}
+			
+			IERAttribute fk = getReferenceFK(relationship, parentKey);
+			if (fk == null) {
+				continue;
+			}
+			
+			AttributeInfo fkAttributeInfo = getFKAttributeInfo(parent.getName());
+			boolean isNotNull = false;
+			if(fkAttributeInfo != null){
+			    isNotNull = fkAttributeInfo.isNotNull();
+			}
+			fk.setNotNull(isNotNull);
+
+            String childKeyName = keys.get(parentKeyName);
 			IERAttribute childKey = attributeFinder.find(child, childKeyName);
-			if (parentKey != null) {
-				IERAttribute fk = getReferenceFK(relationship, parentKey);
-				if (fk == null) {
-					continue;
-				}
-				boolean isNotNull = isFKNotNull(parent.getName(), childKeyName);
-				fk.setNotNull(isNotNull);
-				if (childKey != null && fk != childKey) {
-					relationship.setForeignKey(parentKey, childKey);
-				} else {
-					if (!fk.getName().equals(childKeyName)) {
-						fk.setLogicalName(childKeyName);
-						fk.setPhysicalName(childKeyName);
-					}
-				}
+			if (childKey != null && fk != childKey) {
+				relationship.setForeignKey(parentKey, childKey);
+				continue;
+			}
+			if (!fk.getName().equals(childKeyName)) {
+				fk.setLogicalName(childKeyName);
+				fk.setPhysicalName(childKeyName);
 			}
 		}
 	}
@@ -452,13 +463,6 @@ public class DBToProject {
 			}
 		}
 		return null;
-	}
-
-	private boolean isFKNotNull(String tableName, String fkName) {
-		if (fkInfo.keySet().contains(tableName)) {
-			return fkInfo.get(tableName).isNotNull();
-		}
-		return false;
 	}
 
 	private AttributeInfo getFKAttributeInfo(String tableName) {
