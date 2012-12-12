@@ -1,16 +1,5 @@
 package com.change_vision.astah.extension.plugin.dbreverse.view;
 
-import com.change_vision.astah.extension.plugin.dbreverse.Messages;
-import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
-import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
-import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
-import com.change_vision.jude.api.inf.exception.InvalidEditingException;
-import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
-import com.change_vision.jude.api.inf.project.ProjectAccessor;
-import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
-import com.change_vision.jude.api.inf.project.ProjectEvent;
-import com.change_vision.jude.api.inf.project.ProjectEventListener;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -28,6 +17,17 @@ import javax.swing.WindowConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.change_vision.astah.extension.plugin.dbreverse.Messages;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
+import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
+import com.change_vision.jude.api.inf.exception.InvalidEditingException;
+import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
+import com.change_vision.jude.api.inf.project.ProjectAccessor;
+import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
+import com.change_vision.jude.api.inf.project.ProjectEvent;
+import com.change_vision.jude.api.inf.project.ProjectEventListener;
 
 public class ReverseDialog extends JDialog implements ProjectEventListener {
 
@@ -65,7 +65,7 @@ public class ReverseDialog extends JDialog implements ProjectEventListener {
 
 	private SchemaComboBox schemaCombo = null;
 
-	public ReverseDialog(JFrame frame) throws Throwable {
+	public ReverseDialog(JFrame frame) {
 		super(frame, true);
 
 		ReversePreferences.getInstace(this.getClass());
@@ -107,7 +107,7 @@ public class ReverseDialog extends JDialog implements ProjectEventListener {
 		setLocation((screenSize.width-frameSize.width) / 2, (screenSize.height-frameSize.height) / 2);
 	}
 
-	private JPanel createConnectPanel() throws Throwable {
+	private JPanel createConnectPanel() {
 		CommonGridBagLayout layout = new CommonGridBagLayout();
 		JPanel connectPanel = new JPanel(layout);
 
@@ -211,7 +211,7 @@ public class ReverseDialog extends JDialog implements ProjectEventListener {
 		parentPanel.add(jLabel);
 	}
 
-	public static ReverseDialog getInstance(JFrame frame) throws Throwable {
+	public static ReverseDialog getInstance(JFrame frame) {
 		if (instance == null) {
 			instance = new ReverseDialog(frame);
 		}
