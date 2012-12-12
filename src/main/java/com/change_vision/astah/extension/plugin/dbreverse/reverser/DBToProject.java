@@ -11,6 +11,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.change_vision.astah.extension.plugin.dbreverse.Messages;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.AttributeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DatatypeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DomainConverter;
@@ -42,8 +43,6 @@ import com.change_vision.jude.api.inf.model.IERModel;
 import com.change_vision.jude.api.inf.model.IERRelationship;
 import com.change_vision.jude.api.inf.model.IERSchema;
 import com.change_vision.jude.api.inf.model.IModel;
-import com.change_vision.jude.api.inf.project.ProjectAccessor;
-import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 
 public class DBToProject {
 
@@ -76,16 +75,25 @@ public class DBToProject {
     private AttributeFinder attributeFinder;
 
     private EntityFinder entityFinder;
+    
+    private ProgressMonitor monitor;
+    
+    DBToProject(){
+        this.monitor = new ProgressMonitor() {
+            
+            @Override
+            public void showMessage(String message) {
+                logger.debug(message);
+            }
+        };
+    }
+    
+    public DBToProject(ProgressMonitor monitor){
+        this.monitor = monitor;
+    }
 
-	public void importToProject(String projectFilePath, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
+	public void importToProject(IModel project, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
 			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
-		ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
-		prjAccessor.create(projectFilePath);
-		IModel project = prjAccessor.getProject();
-		if (project == null) {
-			return;
-		}
-		
 		editor = ModelEditorFactory.getERModelEditor();
 		fkInfo = new HashMap<String, AttributeInfo>();
 		entityIndexMap = new HashMap<IEREntity, List<IndexInfo>>();
@@ -112,11 +120,13 @@ public class DBToProject {
 		    logger.error("BadTransactionException is occurred. Transaction is aborted.",e);
 			TransactionManager.abortTransaction();
 		}
-		prjAccessor.save();
-		prjAccessor.close();
+//		prjAccessor.save();
+//		prjAccessor.close();
 	}
 
-	public void showTableCount(int count) {
+	private void showTableCount(int count) {
+	    String message = Messages.getMessage("message.import.table.count",count);
+        monitor.showMessage(message);
 	}
 
 	private void importTable(List<TableInfo> tables) throws InvalidEditingException {
@@ -129,6 +139,8 @@ public class DBToProject {
 	}
 
 	public void showImportingTable(String name) {
+        String message = Messages.getMessage("message.import.table.name",name);
+        monitor.showMessage(message);
 	}
 
 	private void addIndexes(TableInfo tInfo, IEREntity entity)
@@ -209,8 +221,13 @@ public class DBToProject {
 		if (errInfo.isIdentifying()) {
 			debugCreateERRelationship(errInfo, parent, child);
 			if (parent.equals(child)) {
-				logger.warn(relationshipName.concat(" のリレーションシップは追加しませんでした。"));
-				logger.debug("----- astah*では、リレーションシップの親子が同一で一意制約のあるカラムはリレーションシップを追加できません。処理を省きます。 ----");
+			    String warnMessage = Messages.getMessage("message.import.relationship.error.message",relationshipName);
+                monitor.showMessage(warnMessage);
+                logger.warn(warnMessage);
+                String helpMessage = Messages.getMessage("message.import.relationship.error.help_message",relationshipName);
+                monitor.showMessage(helpMessage);
+				logger.debug(helpMessage);
+				return;
 			} else {
 				relationship = editor.createIdentifyingRelationship(parent, child, relationshipName, relationshipName);
 				checkRelationship(parent, child, errInfo, relationship);

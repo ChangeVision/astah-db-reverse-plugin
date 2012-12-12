@@ -19,6 +19,8 @@ import com.change_vision.astah.extension.plugin.dbreverse.view.SchemaComboBox;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
 import com.change_vision.jude.api.inf.exception.ProjectLockedException;
+import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
+import com.change_vision.jude.api.inf.model.IModel;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 
@@ -40,13 +42,7 @@ public class ImportToProject {
 	}
 
 	private static void go() {
-		final Thread worker = new Thread() {
-			@Override
-			public void run() {
-				startImport();
-			}
-		};
-		worker.start();
+        startImport();
 	}
 
 	private static void startImport() {
@@ -78,26 +74,33 @@ public class ImportToProject {
 			}
 
 			ProjectAccessor projectAccessor = ProjectAccessorFactory.getProjectAccessor();
-			String currentProjectPath = projectAccessor.getProjectPath();
+			String currentProjectPath = null;
+			try {
+                currentProjectPath = projectAccessor.getProjectPath();
+            } catch (ProjectNotFoundException e) {
+            }
 
-			DBToProject dbtj = new DBToProject() {
-				@Override
-				public void showTableCount(int count) {
-					DBReverseUtil.showMessage(Messages.getMessage("message.import.table.count") + count);
-				}
-
-				@Override
-				public void showImportingTable(String tableName) {
-					DBReverseUtil.showMessage(Messages.getMessage("message.import.table.name") + tableName);
-				}
-			};
-			dbtj.importToProject(temporaryProjectFilePath, tables, relationships);
+			ProgressMonitor monitor = new ProgressMonitor() {
+                @Override
+                public void showMessage(String message) {
+                    DBReverseUtil.showMessage(message);
+                    
+                }
+            };
+            DBToProject dbtj = new DBToProject(monitor );
+            projectAccessor.create(temporaryProjectFilePath);
+            IModel temporaryModel = projectAccessor.getProject();
+			dbtj.importToProject(temporaryModel, tables, relationships);
 
 			ReverseDialog.getInstance().setTemporaryProjectFilePath(temporaryProjectFilePath);
 			ReverseDialog.getInstance().setVisible(false);
+			
+			if(currentProjectPath != null){
+    			projectAccessor.addProjectEventListener(ReverseDialog.getInstance());
+    			projectAccessor.open(currentProjectPath);
+			    
+			}
 
-			projectAccessor.addProjectEventListener(ReverseDialog.getInstance());
-			projectAccessor.open(currentProjectPath);
 
 			DBReverseUtil.showMessage(Messages.getMessage("message.import.successfully"));
 
