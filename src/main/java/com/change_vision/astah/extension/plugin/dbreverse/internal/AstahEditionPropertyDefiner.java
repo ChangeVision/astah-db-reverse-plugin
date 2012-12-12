@@ -7,7 +7,7 @@ import com.change_vision.astah.extension.plugin.dbreverse.util.AstahAPIUtil;
 
 public class AstahEditionPropertyDefiner extends PropertyDefinerBase {
 
-	private AstahAPIUtil handler = new AstahAPIUtil(null);
+	private AstahAPIUtil handler = new AstahAPIUtil();
 
 	@Override
 	public String getPropertyValue() {

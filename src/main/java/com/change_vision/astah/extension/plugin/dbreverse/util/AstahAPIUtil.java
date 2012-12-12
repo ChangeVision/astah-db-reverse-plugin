@@ -16,16 +16,11 @@ import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 import com.change_vision.jude.api.inf.ui.IWindow;
 
 public class AstahAPIUtil {
+    private static final String DEFAULT_NEW_MODEL_NAME = "no_title";
     /**
      * Logger for this class
      */
     private static final Logger logger = LoggerFactory.getLogger(AstahAPIUtil.class);
-    
-    private IWindow window;
-    
-    public AstahAPIUtil(IWindow window){
-        this.window = window;
-    }
     
     public ProjectAccessor getProjectAccessor(){
         try {
@@ -38,8 +33,20 @@ public class AstahAPIUtil {
     public String getEdition() {
         return getProjectAccessor().getAstahEdition();
     }
+    
+    public String getProjectPath(){
+        try {
+            return getProjectAccessor().getProjectPath();
+        } catch (ProjectNotFoundException e) {
+            return DEFAULT_NEW_MODEL_NAME;
+        }
+    }
+    
+    public boolean isNewModel(){
+        return DEFAULT_NEW_MODEL_NAME.equals(getProjectPath());
+    }
 
-    public boolean saveProject(){
+    public boolean saveProject(IWindow window){
         try {
             getProjectAccessor().save();
         } catch (LicenseNotFoundException e) {
