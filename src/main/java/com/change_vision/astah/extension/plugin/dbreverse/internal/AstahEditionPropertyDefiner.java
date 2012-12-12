@@ -2,10 +2,12 @@ package com.change_vision.astah.extension.plugin.dbreverse.internal;
 
 import ch.qos.logback.core.PropertyDefinerBase;
 
+import com.change_vision.astah.extension.plugin.dbreverse.util.AstahAPIUtil;
+
 
 public class AstahEditionPropertyDefiner extends PropertyDefinerBase {
 
-	private AstahAPIHandler handler = new AstahAPIHandler();
+	private AstahAPIUtil handler = new AstahAPIUtil(null);
 
 	@Override
 	public String getPropertyValue() {

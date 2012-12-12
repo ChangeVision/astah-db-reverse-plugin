@@ -35,6 +35,10 @@ public class AstahAPIUtil {
         }
     }
     
+    public String getEdition() {
+        return getProjectAccessor().getAstahEdition();
+    }
+
     public boolean saveProject(){
         try {
             getProjectAccessor().save();
