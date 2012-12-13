@@ -5,8 +5,8 @@ import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
 import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
 
 public class URLComboBox extends JComboBox {
@@ -31,7 +31,7 @@ public class URLComboBox extends JComboBox {
 			if (null != oldUrl && !"".equals(oldUrl)) {
 				instance.setSelectedItem(oldUrl);
 			} else {
-				String oracle = DBProperties.getInstance().getURL(Constants.ORACLE);
+				String oracle = DBProperties.getInstance().getURL(DatabaseTypes.ORACLE.getType());
 				instance.setSelectedItem(oracle);
 			}
 		}

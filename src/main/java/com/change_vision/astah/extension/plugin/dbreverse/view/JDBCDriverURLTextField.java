@@ -5,7 +5,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JTextField;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
 
 public class JDBCDriverURLTextField extends JTextField {
@@ -20,7 +20,7 @@ public class JDBCDriverURLTextField extends JTextField {
 		if (null != oldDriver && !"".equals(oldDriver)) {
 			setText(oldDriver);
 		} else {
-			setText(DBProperties.getInstance().getJDBCDriver(Constants.ORACLE));
+			setText(DBProperties.getInstance().getJDBCDriver(DatabaseTypes.ORACLE.getType()));
 		}
 	}
 

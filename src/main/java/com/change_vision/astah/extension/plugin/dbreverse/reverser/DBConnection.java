@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 
@@ -49,10 +48,11 @@ public class DBConnection {
 	 * @throws ClassNotFoundException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
+	 * @throws IllegalStateException
 	 */
 	public void connect(ConnectionInfo connectionInfo) throws SQLException,
 			MalformedURLException, InstantiationException,
-			IllegalAccessException, ClassNotFoundException {
+			IllegalAccessException, ClassNotFoundException,IllegalStateException {
 		URL driverURL = new URL("file:" + connectionInfo.getPathfile().trim());
 		URL[] drivers = new URL[1];
 		drivers[0] = driverURL;
@@ -64,6 +64,7 @@ public class DBConnection {
 		p.put("user", connectionInfo.getLogin());
 		p.put("password", connectionInfo.getPassword());
 		connection = driver.connect(connectionInfo.getJdbcurl(), p);
+		if(connection == null) throw new IllegalStateException("Cannot connect to the specified database.");
 		metaData = connection.getMetaData();
 	}
 
@@ -72,35 +73,31 @@ public class DBConnection {
 	}
 
 	public String[] getCatalogs() throws SQLException {
-		Vector<String> vCatalog = new Vector<String>();
+		List<String> catalog = new ArrayList<String>();
 		ResultSet res = metaData.getCatalogs();
 		while (res.next()) {
 			String name = res.getString(SCHEM_NAME);
-			if (!"".equals(name) && !vCatalog.contains(name)) {
-				vCatalog.add(name);
+			if (!"".equals(name) && !catalog.contains(name)) {
+				catalog.add(name);
 			}
 		}
 		res.close();
 
-		String catalog[] = new String[vCatalog.size()];
-		vCatalog.copyInto(catalog);
-		return catalog;
+		return catalog.toArray(new String[]{});
 	}
 
-	public String[] getSchemas() throws SQLException {
-		Vector<String> vSchema = new Vector<String>();
+	public String[] getSchemata() throws SQLException {
+		List<String> schemata = new ArrayList<String>();
 		ResultSet res = metaData.getSchemas();
 		while (res.next()) {
 			String name = res.getString(SCHEM_NAME);
-			if (!"".equals(name) && !vSchema.contains(name)) {
-				vSchema.add(name);
+			if (!"".equals(name) && !schemata.contains(name)) {
+				schemata.add(name);
 			}
 		}
 		res.close();
 
-		String schema[] = new String[vSchema.size()];
-		vSchema.copyInto(schema);
-		return schema;
+		return schemata.toArray(new String[]{});
 	}
 
 	public List<String> getTables(String catalog, String schema) throws SQLException {

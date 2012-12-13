@@ -102,20 +102,20 @@ public class DBReverseUtil {
 		DBReader dbReader = DBReader.getInstance();
 
 		String dbType = DBComboBox.getInstance().getSelectedItem().toString();
-		if (Constants.ORACLE.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.ORACLE);
-		} else if (Constants.MYSQL.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.MYSQL);
-		} else if (Constants.MSSQLSERVER.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.MSSQLSERVER);
-		} else if (Constants.POSTGRES.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.POSTGRES);
-		} else if (Constants.HSQL.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.HSQL);
-		} else if (Constants.H2.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.H2);
-		} else if (Constants.HiRDB.equalsIgnoreCase(dbType)) {
-			dbReader.setDBType(DBReader.HiRDB);
+		if (DatabaseTypes.ORACLE.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.ORACLE.getType());
+		} else if (DatabaseTypes.MYSQL.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.MYSQL.getType());
+		} else if (DatabaseTypes.MSSQLSERVER.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.MSSQLSERVER.getType());
+		} else if (DatabaseTypes.POSTGRES.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.POSTGRES.getType());
+		} else if (DatabaseTypes.HSQL.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.HSQL.getType());
+		} else if (DatabaseTypes.H2.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.H2.getType());
+		} else if (DatabaseTypes.HiRDB.selected(dbType)) {
+			dbReader.setDBType(DatabaseTypes.HiRDB.getType());
 		} else {
 			dbReader.setDBType(dbType);
 		}
@@ -132,42 +132,58 @@ public class DBReverseUtil {
 
 		try {
 			dbReader.connect(diverInfo);
-			ImportButton.getInstance().setEnabled(true);
-			schemaCombo.setEnabled(true);
-
-			String selectURL = selectedURL.toLowerCase();
-			for (String schema : dbReader.getSchemas()) {
-				schemaCombo.addItem(schema);
-				if (selectURL.endsWith(schema.toLowerCase())) {
-					schemaCombo.setSelectedItem(schema);
-				}
-			}
-
-			showMessage(Messages.getMessage("message.connection.succeeded"));
-
-			postConnect();
-
+		} catch (IllegalStateException e){
+            showMessage(Messages.getMessage("message.cannnot.connect"));
+            return;
 		} catch (MalformedURLException e) {
 			logger.error(e.getMessage(), e);
 			dbReader = null;
 			showErrorMessage(e);
+            return;
 		} catch (SQLException e) {
 			logger.error(e.getMessage(), e);
 			dbReader = null;
 			showErrorMessage(e);
+            return;
 		} catch (InstantiationException e) {
 			logger.error(e.getMessage(), e);
 			dbReader = null;
 			showErrorMessage(e);
+            return;
 		} catch (IllegalAccessException e) {
 			logger.error(e.getMessage(), e);
 			dbReader = null;
 			showErrorMessage(e);
+            return;
 		} catch (ClassNotFoundException e) {
 			logger.error(e.getMessage(), e);
 			dbReader = null;
-			showErrorMessage(e);
+			showMessage(Messages.getMessage("message.driver.notfound",e.getMessage()));
+            return;
 		}
+        ImportButton.getInstance().setEnabled(true);
+        schemaCombo.setEnabled(true);
+
+        String selectURL = selectedURL.toLowerCase();
+        String[] schemata = null;
+        try {
+            schemata = dbReader.getSchemata();
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            dbReader = null;
+            showErrorMessage(e);
+            return;
+        }
+        for (String schema : schemata) {
+            schemaCombo.addItem(schema);
+            if (selectURL.endsWith(schema.toLowerCase())) {
+                schemaCombo.setSelectedItem(schema);
+            }
+        }
+
+        showMessage(Messages.getMessage("message.connection.succeeded"));
+
+        postConnect();
 	}
 
 	private static void postConnect() {

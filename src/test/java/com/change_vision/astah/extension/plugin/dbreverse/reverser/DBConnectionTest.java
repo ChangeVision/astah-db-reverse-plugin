@@ -50,7 +50,7 @@ public class DBConnectionTest {
     public void connectWithH2TestDB() throws Exception {
         connection.connect(info);
 
-        String[] schemas = connection.getSchemas();
+        String[] schemas = connection.getSchemata();
         assertThat(schemas.length,is(2));
         assertThat(Arrays.asList(schemas),hasItem("PUBLIC"));
     }
@@ -58,7 +58,7 @@ public class DBConnectionTest {
     @Test
     public void getSchemas() throws Exception {
         connection.connect(info);
-        String[] schemas = connection.getSchemas();
+        String[] schemas = connection.getSchemata();
         assertThat(Arrays.asList(schemas),allOf(hasItem("PUBLIC"),hasItem("INFORMATION_SCHEMA")));
     }
     

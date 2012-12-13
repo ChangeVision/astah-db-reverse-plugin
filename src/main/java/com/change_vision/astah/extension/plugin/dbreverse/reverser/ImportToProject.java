@@ -15,7 +15,7 @@ import com.change_vision.astah.extension.plugin.dbreverse.internal.progress.Prog
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.util.AstahAPIWrapper;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
@@ -122,9 +122,9 @@ public class ImportToProject {
     }
 
     private boolean isScanCategoryType(String currentDBType) {
-        return Constants.MYSQL.equalsIgnoreCase(currentDBType)
-                || Constants.MSSQLSERVER.equalsIgnoreCase(currentDBType)
-                || Constants.OTHERS_CATEGORY.equalsIgnoreCase(currentDBType);
+        return DatabaseTypes.MYSQL.selected(currentDBType)
+                || DatabaseTypes.MSSQLSERVER.selected(currentDBType)
+                || DatabaseTypes.OTHERS_CATEGORY.selected(currentDBType);
     }
 
     private String getTemporaryProjectFilePath() throws IOException {

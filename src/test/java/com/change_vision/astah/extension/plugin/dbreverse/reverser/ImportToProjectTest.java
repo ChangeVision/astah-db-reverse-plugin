@@ -16,7 +16,7 @@ import org.mockito.MockitoAnnotations;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 
 public class ImportToProjectTest {
     
@@ -44,7 +44,7 @@ public class ImportToProjectTest {
         ImportToProject importer = new ImportToProject(reader);
         boolean imported;
         try {
-            imported = importer.doImport(Constants.H2,"PUBLIC");
+            imported = importer.doImport(DatabaseTypes.H2.getType(),"PUBLIC");
         } finally{
             reader.close();
         }
@@ -58,7 +58,7 @@ public class ImportToProjectTest {
         when(reader.getTables("PUBLIC", null)).thenReturn(new ArrayList<TableInfo>());
         when(reader.getRelationships("PUBLIC", null)).thenReturn(new ArrayList<ERRelationshipInfo>());
         ImportToProject importer = new ImportToProject(reader);
-        boolean imported = importer.doImport(Constants.MYSQL, "PUBLIC");
+        boolean imported = importer.doImport(DatabaseTypes.MYSQL.getType(), "PUBLIC");
         assertThat(imported,is(true));
     }
     
@@ -69,7 +69,7 @@ public class ImportToProjectTest {
         when(reader.getTables("PUBLIC", null)).thenThrow(new SQLException("Illegal Usege"));
         when(reader.getRelationships("PUBLIC", null)).thenThrow(new SQLException("Illegal Usege"));
         ImportToProject importer = new ImportToProject(reader);
-        boolean imported = importer.doImport(Constants.POSTGRES, "PUBLIC");
+        boolean imported = importer.doImport(DatabaseTypes.POSTGRES.getType(), "PUBLIC");
         assertThat(imported,is(true));
     }
 

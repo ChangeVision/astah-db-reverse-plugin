@@ -5,7 +5,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JTextField;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
 
 public class UserTextField extends JTextField {
@@ -20,7 +20,7 @@ public class UserTextField extends JTextField {
 		if (null != oldUser && !"".equals(oldUser)) {
 			setText(oldUser);
 		} else {
-			setText(DBProperties.getInstance().getUser(Constants.ORACLE));
+			setText(DBProperties.getInstance().getUser(DatabaseTypes.ORACLE.getType()));
 		}
 	}
 

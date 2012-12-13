@@ -19,7 +19,7 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.Datatyp
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
-import com.change_vision.astah.extension.plugin.dbreverse.util.Constants;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DatabaseTypes;
 
 public class DBReader {
 
@@ -157,20 +157,6 @@ public class DBReader {
 	 */
 	public static final int SOURCE_DATA_TYPE = 22;
 
-	public static final String ORACLE = "Oracle";
-
-	public static final String MYSQL = "MySql";
-
-	public static final String MSSQLSERVER = "MsSqlServer";
-
-	public static final String POSTGRES = "PostGreSQL";
-
-	public static final String HSQL = "HSQLDB";
-
-	public static final String H2 = "H2 Database Engine";
-
-	public static final String HiRDB = "HiRDB";
-
 	public static final String NONE = "None";
 
 	public static final String OPTIONAL = "Optional";
@@ -224,27 +210,27 @@ public class DBReader {
 		}
 	}
 
-	public String[] getSchemas() throws SQLException {
-		if (ORACLE.equals(dbType)) {
-			return connection.getSchemas();
-		} else if (MYSQL.equals(dbType)) {
+	public String[] getSchemata() throws SQLException {
+		if (DatabaseTypes.ORACLE.selected(dbType)) {
+			return connection.getSchemata();
+		} else if (DatabaseTypes.MYSQL.selected(dbType)) {
 			return connection.getCatalogs();
-		} else if (MSSQLSERVER.equals(dbType)) {
+		} else if (DatabaseTypes.MSSQLSERVER.selected(dbType)) {
 			return connection.getCatalogs();
-		} else if (POSTGRES.equals(dbType)) {
-			return connection.getSchemas();
-		} else if (H2.equals(dbType)) {
-			return connection.getSchemas();
-		} else if (HSQL.equals(dbType)) {
-			return connection.getSchemas();
-		} else if (HiRDB.equals(dbType)) {
-			return connection.getSchemas();
-		} else if (Constants.OTHERS_CATEGORY.equals(dbType)) {
+		} else if (DatabaseTypes.POSTGRES.selected(dbType)) {
+			return connection.getSchemata();
+		} else if (DatabaseTypes.H2.selected(dbType)) {
+			return connection.getSchemata();
+		} else if (DatabaseTypes.HSQL.selected(dbType)) {
+			return connection.getSchemata();
+		} else if (DatabaseTypes.HiRDB.selected(dbType)) {
+			return connection.getSchemata();
+		} else if (DatabaseTypes.OTHERS_CATEGORY.selected(dbType)) {
 			return connection.getCatalogs();
-		} else if (Constants.OTHERS_SCHEMA.equals(dbType)) {
-			return connection.getSchemas();
+		} else if (DatabaseTypes.OTHERS_SCHEMA.selected(dbType)) {
+			return connection.getSchemata();
 		}
-		return connection.getSchemas();
+		return connection.getSchemata();
 	}
 
 	public HashSet<String> getPKs(String catalog, String schema, String table) throws SQLException {
@@ -297,7 +283,7 @@ public class DBReader {
 		if (connection == null) {
 			return null;
 		}
-		if (HiRDB.equals(dbType)) {
+		if (DatabaseTypes.HiRDB.selected(dbType)) {
 			tableNames = connection.getTablesFromHiRDB(catalog, schema);
 		} else {
 			tableNames = connection.getTables(catalog, schema);
@@ -466,7 +452,7 @@ public class DBReader {
 	}
 
 	private int getLength(ResultSet attrSet, DatatypeInfo dInfo) throws SQLException {
-		if (POSTGRES.equals(dbType)
+		if (DatabaseTypes.POSTGRES.selected(dbType)
 				&& ("TIME".equalsIgnoreCase(dInfo.getName())
 						|| "TIMESTAMP".equalsIgnoreCase(dInfo.getName())
 						|| "TIMESTAMPTZ".equalsIgnoreCase(dInfo.getName())
@@ -482,7 +468,7 @@ public class DBReader {
 		String dtName = attrSet.getString(TYPE_NAME);
 		dtName = getValidDatatypeName(dtName);
 		dInfo.setName(dtName);
-		if (ORACLE.equals(dbType) || H2.equals(dbType)) {
+		if (DatabaseTypes.ORACLE.selected(dbType) || DatabaseTypes.H2.selected(dbType)) {
 			if ("CHAR".equalsIgnoreCase(dtName)) {
 				dInfo.setLengthConstraint(OPTIONAL);
 				dInfo.setPrecisionConstraint(NONE);
@@ -544,7 +530,7 @@ public class DBReader {
 				dInfo.setLengthConstraint(NONE);
 				dInfo.setPrecisionConstraint(NONE);
 			}
-		} else if (MYSQL.equals(dbType)) {
+		} else if (DatabaseTypes.MYSQL.selected(dbType)) {
 			if ("BIT".equalsIgnoreCase(dtName)) {
 				dInfo.setLengthConstraint(OPTIONAL);
 				dInfo.setPrecisionConstraint(NONE);
@@ -633,7 +619,7 @@ public class DBReader {
 				dInfo.setLengthConstraint(NONE);
 				dInfo.setPrecisionConstraint(NONE);
 			}
-		} else if (MSSQLSERVER.equals(dbType)) {
+		} else if (DatabaseTypes.MSSQLSERVER.selected(dbType)) {
 			if ("BIGINT".equalsIgnoreCase(dtName)) {
 				dInfo.setLengthConstraint(NONE);
 				dInfo.setPrecisionConstraint(NONE);
@@ -713,7 +699,7 @@ public class DBReader {
 				dInfo.setLengthConstraint(NONE);
 				dInfo.setPrecisionConstraint(OPTIONAL);
 			}
-		} else if (POSTGRES.equals(dbType)) {
+		} else if (DatabaseTypes.POSTGRES.selected(dbType)) {
 			if ("ABSTIME".equalsIgnoreCase(dtName)) {
 				dInfo.setLengthConstraint(NONE);
 				dInfo.setPrecisionConstraint(NONE);
@@ -918,7 +904,7 @@ public class DBReader {
 			return null;
 		}
 		if (tableNames == null) {
-			if (HiRDB.equals(dbType)) {
+			if (DatabaseTypes.HiRDB.selected(dbType)) {
 				tableNames = connection.getTablesFromHiRDB(catalog, schema);
 			} else {
 				tableNames = connection.getTables(catalog, schema);
@@ -932,7 +918,7 @@ public class DBReader {
 			Map<String, ERRelationshipInfo> relationMap = new HashMap<String, ERRelationshipInfo>();
 			ResultSet res = null;
 			try {
-				if (ORACLE.equals(dbType)) {
+				if (DatabaseTypes.ORACLE.selected(dbType)) {
 					if (preparedStatement == null) {
 						preparedStatement = getRelationinfoBySql();
 					}
@@ -949,7 +935,7 @@ public class DBReader {
 				String fkName;
 				String referenceTableName;
 				String pkName;
-				if (ORACLE.equals(dbType)) {
+				if (DatabaseTypes.ORACLE.selected(dbType)) {
 					//current column name(foreign key)
 					fkName = res.getString(3);
 					//relation name

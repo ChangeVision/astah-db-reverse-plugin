@@ -80,7 +80,7 @@ public class DBReaderTest {
     @Test
     public void getSchemas() throws Exception {
         reader.connect(info);
-        String[] schemas = reader.getSchemas();
+        String[] schemas = reader.getSchemata();
         assertThat(schemas.length,is(2));
         assertThat(Arrays.asList(schemas),allOf(hasItem("PUBLIC"),hasItem("INFORMATION_SCHEMA")));
     }
