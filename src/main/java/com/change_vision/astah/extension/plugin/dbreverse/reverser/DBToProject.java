@@ -76,7 +76,7 @@ public class DBToProject {
     private ProgressMonitor monitor;
     
     DBToProject(ERModelEditor editor){
-        this.monitor = new LogProggressMonitor();
+        this(editor,new LogProggressMonitor());
     }
     
     public DBToProject(ERModelEditor editor, ProgressMonitor monitor){
