@@ -18,7 +18,7 @@ public class ReverseAction implements IPluginActionDelegate {
 	private AstahAPIWrapper apiUtil  = new AstahAPIWrapper();
 
 	public Object run(IWindow window) throws UnExpectedException {
-	    if (apiUtil.isEditing()) {
+//	    if (apiUtil.isEditing()) {
 			int result = JOptionPane.showConfirmDialog(
 			        window.getParent(), 
 			        Messages.getMessage("warning_message.save_before_reverse_warning"), 
@@ -50,7 +50,7 @@ public class ReverseAction implements IPluginActionDelegate {
 				default:
 					return null;
 			}
-		}
+//		}
 
 		JFrame frame = (JFrame) window.getParent();
 		ReverseDialog.getInstance(frame).showView();
