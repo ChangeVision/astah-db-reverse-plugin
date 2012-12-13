@@ -81,6 +81,10 @@ public class AstahAPIWrapper {
         }
     }
     
+    public boolean isEditing(){
+        return getMainFrame().getTitle().contains("*");
+    }
+    
     public boolean isNewModel(){
         return DEFAULT_NEW_MODEL_NAME.equals(getProjectPath());
     }
