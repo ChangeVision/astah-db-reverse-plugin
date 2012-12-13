@@ -6,36 +6,69 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 
 import com.change_vision.astah.extension.plugin.dbreverse.Messages;
+import com.change_vision.astah.extension.plugin.dbreverse.internal.progress.MessageAreaNotifier;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBReader;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.ImportToProject;
+import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
 
 public class ImportButton extends JButton implements ActionListener {
 
-	private static final long serialVersionUID = -8333380826691409178L;
+    private static final long serialVersionUID = -8333380826691409178L;
 
-	private static final String NAME = "button.import";
+    private static final String NAME = "button.import";
 
-	private static ImportButton instance = null;
+    private static ImportButton instance = null;
 
-	public ImportButton() {
-		setName(NAME);
-		setText(Messages.getMessage("button.text.import"));
-		setEnabled(false);
+    private MessageAreaNotifier monitor;
 
-		addActionListener(this);
-	}
+    public ImportButton() {
+        setName(NAME);
+        setText(Messages.getMessage("button.text.import"));
+        setEnabled(false);
 
-	public static ImportButton getInstance() {
-		if (instance == null) {
-			instance = new ImportButton();
-		}
+        addActionListener(this);
+        monitor = new MessageAreaNotifier();
+    }
 
-		return instance;
-	}
+    public static ImportButton getInstance() {
+        if (instance == null) {
+            instance = new ImportButton();
+        }
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		setEnabled(false);
-		SchemaComboBox.getInstance().setEnabled(false);
-		ImportToProject.doImport();
-	}
+        return instance;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        setEnabled(false);
+        SchemaComboBox.getInstance().setEnabled(false);
+        DBReader reader = DBReader.getInstance();
+        if (reader == null) {
+            monitor.showMessage(Messages.getMessage("message.database.disconnected"));
+            return;
+        }
+        String schema = getSchema();
+        String currentDBType = getDBType();
+        
+        ImportToProject importer = new ImportToProject(reader,monitor);
+        boolean imported = importer.doImport(currentDBType,schema);
+        if (imported) {
+            DBReverseUtil.disconnectDB();
+            monitor.showMessage(Messages.getMessage("message.import.successfully"));
+            ReverseDialog dialog = ReverseDialog.getInstance();
+            DBReverseUtil.showInformationDialog(dialog.getParent(), Messages.getMessage("message.process.finished"));
+        }
+    }
+
+    private String getDBType() {
+        Object item = DBComboBox.getInstance().getSelectedItem();
+        if(item == null) return null;
+        return item.toString();
+    }
+
+    private String getSchema() {
+        Object item = SchemaComboBox.getInstance().getSelectedItem();
+        if (item == null) return null;
+        return item.toString();
+    }
 }

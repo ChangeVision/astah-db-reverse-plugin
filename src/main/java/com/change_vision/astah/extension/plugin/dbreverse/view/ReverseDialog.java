@@ -22,22 +22,14 @@ import com.change_vision.astah.extension.plugin.dbreverse.Messages;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBProperties;
 import com.change_vision.astah.extension.plugin.dbreverse.util.DBReverseUtil;
 import com.change_vision.astah.extension.plugin.dbreverse.util.ReversePreferences;
-import com.change_vision.jude.api.inf.exception.InvalidEditingException;
-import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
-import com.change_vision.jude.api.inf.project.ProjectAccessor;
-import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
-import com.change_vision.jude.api.inf.project.ProjectEvent;
-import com.change_vision.jude.api.inf.project.ProjectEventListener;
 
-public class ReverseDialog extends JDialog implements ProjectEventListener {
+public class ReverseDialog extends JDialog {
 
 	private static final long serialVersionUID = 5185132606559602059L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ReverseDialog.class);
 
 	private static ReverseDialog instance = null;
-
-	public String temporaryProjectFilePath = null;
 
 	private URLComboBox urlCombo = null;
 
@@ -89,10 +81,6 @@ public class ReverseDialog extends JDialog implements ProjectEventListener {
 		setLocation();
 		setResizable(false);
 		DBReverseUtil.showMessage(Messages.getMessage("message.console.initialize"));
-	}
-
-	public void setTemporaryProjectFilePath(String temporaryProjectFilePath) {
-		this.temporaryProjectFilePath = temporaryProjectFilePath;
 	}
 
 	private void setLocation() {
@@ -222,39 +210,6 @@ public class ReverseDialog extends JDialog implements ProjectEventListener {
 	public void showView() {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
-	}
-
-	@Override
-	public void projectChanged(ProjectEvent paramProjectEvent) {
-	}
-
-	@Override
-	public void projectClosed(ProjectEvent paramProjectEvent) {
-	}
-
-	@Override
-	public void projectOpened(ProjectEvent paramProjectEvent) {
-		ProjectAccessor prjAccessor = null;
-		try {
-			prjAccessor = ProjectAccessorFactory.getProjectAccessor();
-			if (temporaryProjectFilePath != null) {
-				prjAccessor.easyMerge(temporaryProjectFilePath, true);
-			}
-			temporaryProjectFilePath = null;
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
-		} catch (ProjectNotFoundException e) {
-			logger.error(e.getMessage(), e);
-		} catch (InvalidEditingException e) {
-			logger.error(e.getMessage(), e);
-		} finally {
-			if (prjAccessor != null) {
-				prjAccessor.removeProjectEventListener(this);
-			}
-		}
-
-		DBReverseUtil.disconnectDB();
-		DBReverseUtil.showInformationDialog(getParent(), Messages.getMessage("message.process.finished"));
 	}
 
 	public static ReverseDialog getInstance() {

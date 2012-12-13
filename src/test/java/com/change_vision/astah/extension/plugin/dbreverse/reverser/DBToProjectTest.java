@@ -16,6 +16,8 @@ import org.junit.rules.TemporaryFolder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelationshipInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
+import com.change_vision.jude.api.inf.editor.ERModelEditor;
+import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
 import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.model.IERAttribute;
 import com.change_vision.jude.api.inf.model.IEREntity;
@@ -70,7 +72,8 @@ public class DBToProjectTest {
 
     @Test
     public void importToProjectDetail() throws Exception {
-        DBToProject dbToProject = new DBToProject();
+        ERModelEditor editor = ModelEditorFactory.getERModelEditor();
+        DBToProject dbToProject = new DBToProject(editor);
         dbToProject.importToProject(project, tables, relationships);
 
         INamedElement[] elements = accessor.findElements(IERModel.class);

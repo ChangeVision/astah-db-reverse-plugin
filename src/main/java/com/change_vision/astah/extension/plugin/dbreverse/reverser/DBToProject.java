@@ -1,6 +1,5 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.change_vision.astah.extension.plugin.dbreverse.Messages;
+import com.change_vision.astah.extension.plugin.dbreverse.internal.progress.LogProggressMonitor;
+import com.change_vision.astah.extension.plugin.dbreverse.internal.progress.ProgressMonitor;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.AttributeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DatatypeConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.DomainConverter;
@@ -27,13 +28,9 @@ import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ERRelat
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.IndexInfo;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
-import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
 import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.exception.BadTransactionException;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
-import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
-import com.change_vision.jude.api.inf.exception.ProjectLockedException;
-import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.model.IERAttribute;
 import com.change_vision.jude.api.inf.model.IERDatatype;
 import com.change_vision.jude.api.inf.model.IERDomain;
@@ -46,7 +43,7 @@ import com.change_vision.jude.api.inf.model.IModel;
 
 public class DBToProject {
 
-	private static final Logger logger = LoggerFactory.getLogger(DBToProject.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBToProject.class);
 
 	private ERModelEditor editor;
 
@@ -78,23 +75,16 @@ public class DBToProject {
     
     private ProgressMonitor monitor;
     
-    DBToProject(){
-        this.monitor = new ProgressMonitor() {
-            
-            @Override
-            public void showMessage(String message) {
-                logger.debug(message);
-            }
-        };
+    DBToProject(ERModelEditor editor){
+        this.monitor = new LogProggressMonitor();
     }
     
-    public DBToProject(ProgressMonitor monitor){
+    public DBToProject(ERModelEditor editor, ProgressMonitor monitor){
+        this.editor = editor;
         this.monitor = monitor;
     }
 
-	public void importToProject(IModel project, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws LicenseNotFoundException,
-			ProjectLockedException, InvalidEditingException, ClassNotFoundException, IOException, ProjectNotFoundException {
-		editor = ModelEditorFactory.getERModelEditor();
+	public void importToProject(IModel project, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws InvalidEditingException {
 		fkInfo = new HashMap<String, AttributeInfo>();
 		entityIndexMap = new HashMap<IEREntity, List<IndexInfo>>();
 		indexAttributesMap = new HashMap<IndexInfo, List<String>>();
@@ -120,8 +110,6 @@ public class DBToProject {
 		    logger.error("BadTransactionException is occurred. Transaction is aborted.",e);
 			TransactionManager.abortTransaction();
 		}
-//		prjAccessor.save();
-//		prjAccessor.close();
 	}
 
 	private void showTableCount(int count) {
