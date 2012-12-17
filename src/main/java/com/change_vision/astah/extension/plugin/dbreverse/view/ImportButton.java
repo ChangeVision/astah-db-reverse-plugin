@@ -1,5 +1,6 @@
 package com.change_vision.astah.extension.plugin.dbreverse.view;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -40,24 +41,33 @@ public class ImportButton extends JButton implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        setEnabled(false);
         SchemaComboBox.getInstance().setEnabled(false);
         DBReader reader = DBReader.getInstance();
         if (reader == null) {
             monitor.showMessage(Messages.getMessage("message.database.disconnected"));
+            setEnabled(false);
             return;
         }
         String schema = getSchema();
         String currentDBType = getDBType();
         
         ImportToProject importer = new ImportToProject(reader,monitor);
-        boolean imported = importer.doImport(currentDBType,schema);
-        if (imported) {
-            DBReverseUtil.disconnectDB();
-            monitor.showMessage(Messages.getMessage("message.import.successfully"));
-            ReverseDialog dialog = ReverseDialog.getInstance();
-            DBReverseUtil.showInformationDialog(dialog.getParent(), Messages.getMessage("message.process.finished"));
+        Cursor currentCursor = getCursor();
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        try {
+            boolean imported = importer.doImport(currentDBType,schema);
+            if (imported) {
+                DBReverseUtil.disconnectDB();
+                monitor.showMessage(Messages.getMessage("message.import.successfully"));
+                ReverseDialog dialog = ReverseDialog.getInstance();
+                DBReverseUtil.showInformationDialog(dialog.getParent(), Messages.getMessage("message.process.finished"));
+                setEnabled(false);
+            }
+        } finally {
+            setCursor(currentCursor);
         }
+
     }
 
     private String getDBType() {
