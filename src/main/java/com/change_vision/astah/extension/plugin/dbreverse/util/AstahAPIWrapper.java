@@ -30,8 +30,24 @@ public class AstahAPIWrapper {
         }
     }
     
+    public void create(){
+        try {
+            getProjectAccessor().create();
+        } catch (IOException e) {
+        }
+    }
+    
     public void createProject(String path) throws IOException{
         getProjectAccessor().create(path);
+    }
+    
+    public boolean isProjectOpened(){
+        try {
+            getProjectAccessor().getProject();
+            return true;
+        } catch (ProjectNotFoundException e) {
+            return false;
+        }
     }
     
     public IModel getProjectModel(){
@@ -81,8 +97,8 @@ public class AstahAPIWrapper {
         }
     }
     
-    public boolean isEditing(){
-        return getMainFrame().getTitle().contains("*");
+    public boolean isProjectModified(){
+        return getProjectAccessor().isProjectModified();
     }
     
     public boolean isNewModel(){

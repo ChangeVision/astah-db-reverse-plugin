@@ -15,42 +15,46 @@ import com.change_vision.jude.api.inf.ui.IWindow;
 
 public class ReverseAction implements IPluginActionDelegate {
 	
-	private AstahAPIWrapper apiUtil  = new AstahAPIWrapper();
+	private AstahAPIWrapper apiWrapper  = new AstahAPIWrapper();
 
 	public Object run(IWindow window) throws UnExpectedException {
-//	    if (apiUtil.isEditing()) {
-			int result = JOptionPane.showConfirmDialog(
-			        window.getParent(), 
-			        Messages.getMessage("warning_message.save_before_reverse_warning"), 
-			        Messages.getMessage("dialog.title.confirm"),
-			        JOptionPane.YES_NO_CANCEL_OPTION);
-			switch (result) {
-				case JOptionPane.YES_OPTION:
-                try {
-                    apiUtil.save();
-                } catch (LicenseNotFoundException e) {
-                    JOptionPane.showMessageDialog(window.getParent(),
-                            Messages.getMessage("message.license_not_found"), Messages.getMessage("dialog.title.warning"),
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
-                } catch (ProjectLockedException e) {
-                    JOptionPane.showMessageDialog(window.getParent(),
-                            Messages.getMessage("message.project_lock"), Messages.getMessage("dialog.title.error"),
-                            JOptionPane.WARNING_MESSAGE);
-                    return null;
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(window.getParent(),e.getMessage(), Messages.getMessage("dialog.title.error"),
-                            JOptionPane.WARNING_MESSAGE);
-                }
-					break;
-				case JOptionPane.NO_OPTION:
-				    break;
-				case JOptionPane.CANCEL_OPTION:
-					return null;
-				default:
-					return null;
-			}
-//		}
+	    
+	    if(apiWrapper.isProjectOpened() == false){
+	        apiWrapper.create();
+	    }
+	    if(apiWrapper.isProjectModified()){
+	        int result = JOptionPane.showConfirmDialog(
+	                window.getParent(), 
+	                Messages.getMessage("warning_message.save_before_reverse_warning"), 
+	                Messages.getMessage("dialog.title.confirm"),
+	                JOptionPane.YES_NO_OPTION);
+	        switch (result) {
+	            case JOptionPane.YES_OPTION:
+	            try {
+	                apiWrapper.save();
+	            } catch (LicenseNotFoundException e) {
+	                JOptionPane.showMessageDialog(window.getParent(),
+	                        Messages.getMessage("message.license_not_found"), Messages.getMessage("dialog.title.warning"),
+	                        JOptionPane.ERROR_MESSAGE);
+	                return null;
+	            } catch (ProjectLockedException e) {
+	                JOptionPane.showMessageDialog(window.getParent(),
+	                        Messages.getMessage("message.project_lock"), Messages.getMessage("dialog.title.error"),
+	                        JOptionPane.WARNING_MESSAGE);
+	                return null;
+	            } catch (IOException e) {
+	                JOptionPane.showMessageDialog(window.getParent(),e.getMessage(), Messages.getMessage("dialog.title.error"),
+	                        JOptionPane.WARNING_MESSAGE);
+	            }
+	                break;
+	            case JOptionPane.NO_OPTION:
+	                break;
+	            case JOptionPane.CANCEL_OPTION:
+	                return null;
+	            default:
+	                return null;
+	        }
+	    }
 
 		JFrame frame = (JFrame) window.getParent();
 		ReverseDialog.getInstance(frame).showView();
