@@ -16,6 +16,7 @@ http://astah.net/features/db-reverse-plugin
 
 How to install
 ----------------
+0. [Download the jar file.](https://github.com/ChangeVision/astah-db-reverse-plugin/downloads)
 1. Deploy the jar file in the "plugins" folder under the Astah Install folder
 2. Start Astah
 3. You find that the [DB Reverse] has been added under the [Tool] menu
