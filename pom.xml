@@ -15,6 +15,12 @@
   <packaging>jar</packaging>
   <name>%bundle.name</name>
   <description>%bundle.description</description>
+  <scm>
+    <url>http://github.com/ChangeVision/astah-db-reverse-plugin/tree/master</url>
+    <connection>scm:git:git:git@github.com:ChangeVision/astah-db-reverse-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:ChangeVision/astah-db-reverse-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
   <pluginRepositories>
     <pluginRepository>
       <id>local_astah_repository</id>
