@@ -51,6 +51,18 @@
       <url>http://uk.maven.org/maven2/</url>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>dev.change-vision.com-deploy</id>
+      <name>dev.change-vision.com Maven Repository</name>
+      <url>scpexe://dev.change-vision.com/opt/repository/maven2</url>
+    </repository>
+    <snapshotRepository>
+      <id>dev.change-vision.com-snapshot-deploy</id>
+      <name>dev.change-vision.com Maven Repository</name>
+      <url>scpexe://dev.change-vision.com/opt/repository/maven2-snapshot</url>
+    </snapshotRepository>
+  </distributionManagement>
   <reporting>
     <plugins>
       <plugin>
@@ -304,13 +316,13 @@
       <version>1.8.4</version>
       <scope>test</scope>
     </dependency>
-	<dependency>
-		<groupId>com.h2database</groupId>
-		<artifactId>h2</artifactId>
-		<version>1.3.170</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
+  <dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <version>1.3.170</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>0.9.30</version>
