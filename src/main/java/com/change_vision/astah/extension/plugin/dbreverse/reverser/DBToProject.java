@@ -280,6 +280,10 @@ public class DBToProject {
 			IERAttribute attribute = foreignKeys[i];
 			logger.debug("Created attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
 			AttributeInfo attributeInfo = getFKAttributeInfo(child.getName());
+			if (attributeInfo == null) {
+				logger.warn("Ignored unexpected table:=" + child.getName());
+				continue;
+			}
 			DomainInfo domainInfo = attributeInfo.getDomain();
 			if(domainInfo != null) {
 			    IERDomain domain = findOrConvertDomain(domainInfo);
