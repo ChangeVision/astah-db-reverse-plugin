@@ -108,7 +108,6 @@ public class DBToProject {
 			TransactionManager.endTransaction();
 		} catch (BadTransactionException e) {
 		    logger.error("BadTransactionException is occurred. Transaction is aborted.",e);
-		} finally {
 			TransactionManager.abortTransaction();
 		}
 	}
