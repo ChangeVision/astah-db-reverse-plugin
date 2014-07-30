@@ -955,9 +955,10 @@ public class DBReader {
 					relationName = res.getString(RELATION_NAME);
 				}
 
-				if (relationMap.keySet().contains(referenceTableName)) {
+				String relationMapKey = referenceTableName + "_" + relationName;
+				if (relationMap.keySet().contains(relationMapKey)) {
 					ERRelationshipInfo info =
-						(ERRelationshipInfo) relationMap.get(referenceTableName);
+						(ERRelationshipInfo) relationMap.get(relationMapKey);
 					if (!info.getKeys().containsKey(pkName)) {
 						info.addKey(pkName, fkName);
 					}
@@ -978,7 +979,7 @@ public class DBReader {
 					rInfo.setNonIdentifying(true);
 				}
 
-				relationMap.put(referenceTableName, rInfo);
+				relationMap.put(relationMapKey, rInfo);
 				relationList.add(rInfo);
 			}
 			res.close();
