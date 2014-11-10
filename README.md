@@ -3,7 +3,7 @@ DB Reverse Engineering Plugin
 
 Version
 ----------------
-1.0.3
+1.0.4
 
 Available for
 ----------------
@@ -16,7 +16,7 @@ http://astah.net/features/db-reverse-plugin
 
 How to install
 ----------------
-0. [Download the jar file.](http://astah.change-vision.com/plugins/dbreverse/1.0.3.html)
+0. [Download the jar file.](http://astah.change-vision.com/plugins/dbreverse/1.0.4.html)
 1. Deploy the jar file in the "plugins" folder under the Astah Install folder
 2. Start Astah
 3. You find that the [DB Reverse] has been added under the [Tool] menu
