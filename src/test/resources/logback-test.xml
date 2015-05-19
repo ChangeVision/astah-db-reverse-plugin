@@ -1,4 +1,4 @@
-<configuration debug="true">
+<configuration>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
@@ -8,10 +8,8 @@
 
 	<!-- turn OFF all logging (children can override) -->
 	<!-- logger name="com.change_vision.astah.extension.plugin.dbreverse" /-->
-	<define name="astah.edition" class="com.change_vision.astah.extension.plugin.dbreverse.internal.AstahEditionPropertyDefiner">
-	</define>
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>${user.home}/.astah/${astah.edition}/extention_plugin_dbreverse.log</File>
+		<File>${user.home}/.astah/dev/extention_plugin_dbreverse.log</File>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>DEBUG</level>
 		</filter>
