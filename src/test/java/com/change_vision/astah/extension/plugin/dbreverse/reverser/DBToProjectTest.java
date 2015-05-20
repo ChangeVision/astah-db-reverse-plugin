@@ -1,6 +1,8 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
@@ -54,7 +56,7 @@ public class DBToProjectTest {
         info.setJdbcurl("jdbc:h2:file:" + dataURL.getPath() + "/h2");
         reader.connect(info);
         tables = reader.getTables("H2", "PUBLIC");
-        relationships = reader.getRelationships("H2", "PUBLIC");
+        relationships = reader.getRelationships(tables);
         File projectFile = folder.newFile("test.asta");
         String projectFilePath = projectFile.getAbsolutePath();
         accessor = ProjectAccessorFactory.getProjectAccessor();

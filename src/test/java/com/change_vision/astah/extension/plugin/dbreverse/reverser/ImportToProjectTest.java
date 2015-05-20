@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,21 +53,22 @@ public class ImportToProjectTest {
     
     @Test
     public void importFromMySQL() throws Exception {
-        when(reader.getTables(null, "PUBLIC")).thenThrow(new SQLException("Illegal Usege"));
-        when(reader.getRelationships(null, "PUBLIC")).thenThrow(new SQLException("Illegal Usege"));
-        when(reader.getTables("PUBLIC", null)).thenReturn(new ArrayList<TableInfo>());
-        when(reader.getRelationships("PUBLIC", null)).thenReturn(new ArrayList<ERRelationshipInfo>());
+        List<TableInfo> dummyInfo = new ArrayList<TableInfo>();
+        when(reader.getTables("PUBLIC", null)).thenReturn(dummyInfo);
+        when(reader.getRelationships(dummyInfo)).thenReturn(new ArrayList<ERRelationshipInfo>());
+        
         ImportToProject importer = new ImportToProject(reader);
+        
         boolean imported = importer.doImport(DatabaseTypes.MYSQL.getType(), "PUBLIC");
         assertThat(imported,is(true));
     }
     
     @Test
     public void importFromPostgreSQL() throws Exception {
-        when(reader.getTables(null, "PUBLIC")).thenReturn(new ArrayList<TableInfo>());
-        when(reader.getRelationships(null, "PUBLIC")).thenReturn(new ArrayList<ERRelationshipInfo>());
-        when(reader.getTables("PUBLIC", null)).thenThrow(new SQLException("Illegal Usege"));
-        when(reader.getRelationships("PUBLIC", null)).thenThrow(new SQLException("Illegal Usege"));
+        List<TableInfo> dummyInfo = new ArrayList<TableInfo>();
+        when(reader.getTables(null, "PUBLIC")).thenReturn(dummyInfo);
+        when(reader.getRelationships(dummyInfo)).thenReturn(new ArrayList<ERRelationshipInfo>());
+        
         ImportToProject importer = new ImportToProject(reader);
         boolean imported = importer.doImport(DatabaseTypes.POSTGRES.getType(), "PUBLIC");
         assertThat(imported,is(true));

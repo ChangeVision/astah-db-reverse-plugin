@@ -51,7 +51,7 @@ public class ImportToProject {
         }
         List<ERRelationshipInfo> relationships;
         try {
-            relationships = getRelationships(currentDBType, schema);
+            relationships = getRelationships(currentDBType, tables);
         } catch (SQLException e) {
             monitor.showErrorMessage(e);
             logger.error("Error has occured when scanning relationship",e);
@@ -113,12 +113,8 @@ public class ImportToProject {
         }
     }
 
-    private List<ERRelationshipInfo> getRelationships(String currentDBType, String schema) throws SQLException {
-        if (isScanCategoryType(currentDBType)) {
-            return reader.getRelationships(schema, null);
-        } else {
-            return reader.getRelationships(null, schema);
-        }
+    private List<ERRelationshipInfo> getRelationships(String currentDBType, List<TableInfo> tables) throws SQLException {
+        return reader.getRelationships(tables);
     }
 
     private boolean isScanCategoryType(String currentDBType) {

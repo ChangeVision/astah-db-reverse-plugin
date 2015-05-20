@@ -5,6 +5,10 @@ import java.util.List;
 
 
 public class TableInfo {
+    
+    private String catalog;
+    
+    private String schema;
 
 	private String name;
 
@@ -17,20 +21,26 @@ public class TableInfo {
 
 	private List<IndexInfo> indexes;
 
-	public TableInfo() {
-		name = "";
+	public TableInfo(String catalog,String schema, String name) {
+	    this.catalog = catalog;
+	    this.schema = schema;
+		this.name = name;
 		type = "";
 		definition = "";
 		attributes = new ArrayList<AttributeInfo>();
 		indexes = new ArrayList<IndexInfo>();
 	}
 
+	public String getCatalog() {
+        return catalog;
+    }
+	
+	public String getSchema() {
+        return schema;
+    }
+	
 	public String getName() {
 		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getDefinition() {
@@ -78,8 +88,9 @@ public class TableInfo {
 
     @Override
     public String toString() {
-        return "TableInfo [name=" + name + ", type=" + type + ", definition=" + definition
-                + ", attributes=" + attributes + ", indexes=" + indexes + "]";
+        return "TableInfo [category=" + catalog + ", name=" + name + ", type=" + type
+                + ", definition=" + definition + ", attributes=" + attributes + ", indexes="
+                + indexes + "]";
     }
 
     @Override
@@ -87,6 +98,7 @@ public class TableInfo {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+        result = prime * result + ((catalog == null) ? 0 : catalog.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((indexes == null) ? 0 : indexes.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -96,26 +108,46 @@ public class TableInfo {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         TableInfo other = (TableInfo) obj;
         if (attributes == null) {
-            if (other.attributes != null) return false;
-        } else if (!attributes.equals(other.attributes)) return false;
+            if (other.attributes != null)
+                return false;
+        } else if (!attributes.equals(other.attributes))
+            return false;
+        if (catalog == null) {
+            if (other.catalog != null)
+                return false;
+        } else if (!catalog.equals(other.catalog))
+            return false;
         if (definition == null) {
-            if (other.definition != null) return false;
-        } else if (!definition.equals(other.definition)) return false;
+            if (other.definition != null)
+                return false;
+        } else if (!definition.equals(other.definition))
+            return false;
         if (indexes == null) {
-            if (other.indexes != null) return false;
-        } else if (!indexes.equals(other.indexes)) return false;
+            if (other.indexes != null)
+                return false;
+        } else if (!indexes.equals(other.indexes))
+            return false;
         if (name == null) {
-            if (other.name != null) return false;
-        } else if (!name.equals(other.name)) return false;
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
         if (type == null) {
-            if (other.type != null) return false;
-        } else if (!type.equals(other.type)) return false;
+            if (other.type != null)
+                return false;
+        } else if (!type.equals(other.type))
+            return false;
         return true;
     }
+
+
 	
 }
