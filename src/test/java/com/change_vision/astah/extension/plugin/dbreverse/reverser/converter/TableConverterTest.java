@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.change_vision.astah.extension.plugin.dbreverse.reverser.converter.TableConverter;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 import com.change_vision.jude.api.inf.editor.ERModelEditor;
 import com.change_vision.jude.api.inf.model.IEREntity;
@@ -36,8 +35,7 @@ public class TableConverterTest {
     
     @Test
     public void convertEntity() throws Exception {
-        TableInfo tableInfo = new TableInfo();
-        tableInfo.setName("hoge");
+        TableInfo tableInfo = new TableInfo("","","hoge");
         
         when(editor.createEREntity(schema, "hoge","hoge")).thenReturn(entity);
         TableConverter converter = new TableConverter(editor,schema);

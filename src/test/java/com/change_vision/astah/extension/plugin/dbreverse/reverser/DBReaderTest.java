@@ -1,6 +1,8 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.net.MalformedURLException;
@@ -88,7 +90,8 @@ public class DBReaderTest {
     @Test
     public void getRelations() throws Exception {
         reader.connect(info);
-        List<ERRelationshipInfo> relationships = reader.getRelationships(CATALOG, SCHEMA);
+        List<TableInfo> tables = reader.getTables(CATALOG, SCHEMA);
+        List<ERRelationshipInfo> relationships = reader.getRelationships(tables);
         assertThat(relationships.size(),is(1));
         for (ERRelationshipInfo relationshipInfo : relationships) {
             System.out.println(relationshipInfo);
@@ -98,17 +101,27 @@ public class DBReaderTest {
     @Test
     public void getFKs() throws Exception {
         reader.connect(info);
-        HashMap<String, String> foreignKeys = reader.getFKs(CATALOG,SCHEMA,TABLE_NAME_OF_SAMPLE_RELATIONSHIPS);
-        assertThat(foreignKeys.size(),is(1));
-        System.out.println(foreignKeys);
+        List<TableInfo> tables = reader.getTables(CATALOG, SCHEMA);
+        for (TableInfo tableInfo : tables) {
+            if (tableInfo.getName().equals(TABLE_NAME_OF_SAMPLE_RELATIONSHIPS)) {
+                HashMap<String, String> foreignKeys = reader.getFKs(tableInfo);
+                assertThat(foreignKeys.size(),is(1));
+                System.out.println(foreignKeys);
+            }
+        }
     }
     
     @Test
     public void getPKs() throws Exception {
         reader.connect(info);
-        HashSet<String> primaryKeys = reader.getPKs(CATALOG, SCHEMA, TABLE_NAME_OF_SAMPLE);
-        assertThat(primaryKeys.size(),is(1));
-        assertThat(primaryKeys,hasItem("TEST_IDENTITY"));
+        List<TableInfo> tables = reader.getTables(CATALOG, SCHEMA);
+        for (TableInfo tableInfo : tables) {
+            if (tableInfo.getName().equals(TABLE_NAME_OF_SAMPLE)) {
+                HashSet<String> primaryKeys = reader.getPKs(tableInfo);
+                assertThat(primaryKeys.size(),is(1));
+                assertThat(primaryKeys,hasItem("TEST_IDENTITY"));
+            }
+        }
     }
 
 }

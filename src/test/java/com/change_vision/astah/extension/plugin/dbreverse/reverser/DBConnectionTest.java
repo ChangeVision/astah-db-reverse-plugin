@@ -1,6 +1,8 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.net.MalformedURLException;
@@ -15,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 
 public class DBConnectionTest {
 
@@ -65,8 +68,14 @@ public class DBConnectionTest {
     @Test
     public void getTables() throws Exception {
         connection.connect(info);
-        List<String> tables = connection.getTables(null, "PUBLIC");
-        assertThat(tables,hasItem("SAMPLE"));
+        List<TableInfo> tables = connection.getTables(null, "PUBLIC");
+        boolean found = false;
+        for (TableInfo table : tables) {
+            if (table.getName().equals("SAMPLE")) {
+                found = true;
+            }
+        }
+        assertThat(found,is(true));
     }
     
     @Test

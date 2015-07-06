@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.ConnectionInfo;
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.TableInfo;
 
 public class DBConnection {
 
@@ -22,7 +23,17 @@ public class DBConnection {
 	 */
 	public static final int SCHEM_NAME = 1;
 
-	/**
+    /**
+     * TABLE_CAT String => table catalog (may be null)
+     */
+    public static final int TABLE_CATALOG = 1;
+    
+    /**
+     * TABLE_SCHEM String => table schema (may be null)
+     */
+    public static final int TABLE_SCHEMA = 2;
+
+    /**
 	 * TABLE_NAME String => table name
 	 */
 	public static final int TABLE_NAME = 3;
@@ -100,31 +111,44 @@ public class DBConnection {
 		return schemata.toArray(new String[]{});
 	}
 
-	public List<String> getTables(String catalog, String schema) throws SQLException {
-		List<String> tables = new ArrayList<String>();
+	public List<TableInfo> getTables(String catalog, String schema) throws SQLException {
+		List<TableInfo> tables = new ArrayList<TableInfo>();
 		metaData = connection.getMetaData();
 		String[] names = {"TABLE", "SYSTEM TABLE"};
 		ResultSet res = metaData.getTables(catalog, schema, "%", names);
 		while (res.next()) {
-			tables.add(res.getString(TABLE_NAME));
+            TableInfo tableInfo = createTableInfo(catalog, schema, res);
+            tables.add(tableInfo);
 		}
 		res.close();
 
 		return tables;
 	}
 
-	public List<String> getTablesFromHiRDB(String catalog, String schema) throws SQLException {
-		List<String> tables = new ArrayList<String>();
+	public List<TableInfo> getTablesFromHiRDB(String catalog, String schema) throws SQLException {
+		List<TableInfo> tables = new ArrayList<TableInfo>();
 		metaData = connection.getMetaData();
 		String[] names = {"BASE TABLE", "SYSTEM TABLE"};
 		ResultSet res = metaData.getTables(catalog, schema, "%", names);
 		while (res.next()) {
-			tables.add(res.getString(TABLE_NAME));
+            TableInfo tableInfo = createTableInfo(catalog, schema, res);
+            tables.add(tableInfo);
 		}
 		res.close();
 
 		return tables;
 	}
+
+
+    private TableInfo createTableInfo(String baseCatalog, String baseSchema, ResultSet res) throws SQLException {
+        String tableCatalog = res.getString(TABLE_CATALOG);
+        String tableSchema = res.getString(TABLE_SCHEMA);
+        String tableName = res.getString(TABLE_NAME);
+        String catalog = tableCatalog != null ? tableCatalog : baseCatalog;
+        String schema = tableSchema != null ? tableSchema : baseSchema;
+        TableInfo tableInfo = new TableInfo(catalog,schema,tableName);
+        return tableInfo;
+    }
 
 	/**
 	 * FIXME Maybe this method is not used by other methods.

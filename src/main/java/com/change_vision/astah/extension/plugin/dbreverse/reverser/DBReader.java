@@ -171,12 +171,9 @@ public class DBReader {
 
 	private String dbType;
 
-	private List<String> tableNames;
-
 	public DBReader() {
 		connection = null;
 		dbType = "";
-		tableNames = null;
 	}
 
 	public static DBReader getInstance() {
@@ -233,10 +230,10 @@ public class DBReader {
 		return connection.getSchemata();
 	}
 
-	public HashSet<String> getPKs(String catalog, String schema, String table) throws SQLException {
-		ResultSet res = getPKSet(catalog, schema, table);
+	public HashSet<String> getPKs(TableInfo tbInfo) throws SQLException {
+		ResultSet res = getPKSet(tbInfo.getCatalog(), tbInfo.getSchema(), tbInfo.getName());
 		if (res == null) {
-			res = getPKSet(schema, catalog, table);
+			res = getPKSet(tbInfo.getSchema(), tbInfo.getCatalog(), tbInfo.getName());
 		}
 		HashSet<String> pks = new HashSet<String>();
 		if (res != null) {
@@ -257,11 +254,11 @@ public class DBReader {
 		}
 	}
 
-	public HashMap<String, String> getFKs(String catalog, String schema, String table) throws SQLException {
+	public HashMap<String, String> getFKs(TableInfo tbInfo) throws SQLException {
 		HashMap<String, String> fks = new HashMap<String, String>();
 		ResultSet res = null;
 		try {
-			res = connection.getMetaData().getImportedKeys(catalog, schema, table);
+			res = connection.getMetaData().getImportedKeys(tbInfo.getCatalog(), tbInfo.getSchema(), tbInfo.getName());
 		} catch (Exception e) {
 			return fks;
 		}
@@ -283,40 +280,35 @@ public class DBReader {
 		if (connection == null) {
 			return null;
 		}
+		
+        List<TableInfo> tableList;
 		if (DatabaseTypes.HiRDB.selected(dbType)) {
-			tableNames = connection.getTablesFromHiRDB(catalog, schema);
+		    tableList = connection.getTablesFromHiRDB(catalog, schema);
 		} else {
-			tableNames = connection.getTables(catalog, schema);
+		    tableList = connection.getTables(catalog, schema);
 		}
 
-		List<TableInfo> tableList = new ArrayList<TableInfo>();
-		TableInfo tbInfo = null;
-		for (String tableName : tableNames) {
-			tbInfo = new TableInfo();
-			// name
-			tbInfo.setName(tableName);
+		for (TableInfo tbInfo : tableList) {
 			// attributes
-			tbInfo.addAttributes(getAttributes(catalog, schema, tableName));
+			tbInfo.addAttributes(getAttributes(tbInfo));
 			// indexes
-			tbInfo.setIndexes(getIndexes(catalog, schema, tableName));
-
-			tableList.add(tbInfo);
+			tbInfo.setIndexes(getIndexes(tbInfo));
 		}
 
 		return tableList;
 	}
 
-	private List<IndexInfo> getIndexes(String catalog, String schema, String table) throws SQLException {
+	private List<IndexInfo> getIndexes(TableInfo tbInfo) throws SQLException {
 		List<IndexInfo> indexes = new ArrayList<IndexInfo>();
-		indexes.addAll(getIndexInfoes(catalog, schema, table));
+		indexes.addAll(getIndexInfoes(tbInfo));
 		return indexes;
 	}
 
-	private List<IndexInfo> getIndexInfoes(String catalog, String schema, String table) throws SQLException {
-		List<String> uniques = getUniqueIndexes(catalog, schema, table);
-		ResultSet indexSet = getIndexSet(catalog, schema, table, false);
+	private List<IndexInfo> getIndexInfoes(TableInfo tbInfo) throws SQLException {
+		List<String> uniques = getUniqueIndexes(tbInfo);
+		ResultSet indexSet = getIndexSet(tbInfo.getCatalog(),tbInfo.getSchema(),tbInfo.getName(), false);
 		if (indexSet == null) {
-			indexSet = getIndexSet(schema, catalog, table, false);
+			indexSet = getIndexSet(tbInfo.getSchema(),tbInfo.getCatalog(),tbInfo.getName(), false);
 		}
 
 		List<IndexInfo> indexes = new ArrayList<IndexInfo>();
@@ -363,11 +355,11 @@ public class DBReader {
 		}
 	}
 
-	private List<String> getUniqueIndexes(String catalog, String schema, String table) throws SQLException {
+	private List<String> getUniqueIndexes(TableInfo tbInfo) throws SQLException {
 		List<String> uniques = new ArrayList<String>();
-		ResultSet indexSet = getIndexSet(catalog, schema, table, true);
+		ResultSet indexSet = getIndexSet(tbInfo.getCatalog(), tbInfo.getSchema(), tbInfo.getName(), true);
 		if (indexSet == null) {
-			indexSet = getIndexSet(schema, catalog, table, true);
+			indexSet = getIndexSet(tbInfo.getSchema(), tbInfo.getCatalog(), tbInfo.getName(), true);
 		}
 		if (indexSet != null) {
 			while (indexSet.next()) {
@@ -383,10 +375,10 @@ public class DBReader {
 		return uniques;
 	}
 
-	private List<AttributeInfo> getAttributes(String catalog, String schema, String tbName) throws SQLException {
-		HashSet<String> pks = getPKs(catalog, schema, tbName);
-		HashMap<String, String> fks = getFKs(catalog, schema, tbName);
-		ResultSet attrSet = connection.getMetaData().getColumns(catalog, schema, tbName, "%");
+	private List<AttributeInfo> getAttributes(TableInfo tableInfo) throws SQLException {
+		HashSet<String> pks = getPKs(tableInfo);
+		HashMap<String, String> fks = getFKs(tableInfo);
+		ResultSet attrSet = connection.getMetaData().getColumns(tableInfo.getCatalog(), tableInfo.getSchema(), tableInfo.getName(), "%");
 		List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
 		List<String> attrs = new ArrayList<String>();
 		while (attrSet.next()) {
@@ -899,21 +891,14 @@ public class DBReader {
 		return name;
 	}
 
-	public List<ERRelationshipInfo> getRelationships(String catalog, String schema) throws SQLException {
+	public List<ERRelationshipInfo> getRelationships(List<TableInfo> tbInfos) throws SQLException {
 		if (connection == null) {
 			return null;
 		}
-		if (tableNames == null) {
-			if (DatabaseTypes.HiRDB.selected(dbType)) {
-				tableNames = connection.getTablesFromHiRDB(catalog, schema);
-			} else {
-				tableNames = connection.getTables(catalog, schema);
-			}
-		}
 		List<ERRelationshipInfo> relationList = new ArrayList<ERRelationshipInfo>();
 		PreparedStatement preparedStatement = null;
-		for (String tableName : tableNames) {
-			HashSet<String> pks = getPKs(catalog, schema, tableName);
+		for (TableInfo tbInfo : tbInfos) {
+			HashSet<String> pks = getPKs(tbInfo);
 
 			Map<String, ERRelationshipInfo> relationMap = new HashMap<String, ERRelationshipInfo>();
 			ResultSet res = null;
@@ -922,10 +907,10 @@ public class DBReader {
 					if (preparedStatement == null) {
 						preparedStatement = getRelationinfoBySql();
 					}
-					preparedStatement.setObject(1, tableName);
+					preparedStatement.setObject(1, tbInfo.getName());
 					res = preparedStatement.executeQuery();
 				} else {
-					res = connection.getMetaData().getImportedKeys(catalog, schema, tableName);
+					res = connection.getMetaData().getImportedKeys(tbInfo.getCatalog(), tbInfo.getSchema(), tbInfo.getName());
 				}
 			} catch (Exception e) {
 				continue;
@@ -966,7 +951,7 @@ public class DBReader {
 				}
 
 				ERRelationshipInfo rInfo = new ERRelationshipInfo();
-				rInfo.setChildTable(tableName);
+				rInfo.setChildTable(tbInfo.getName());
 				rInfo.setParentTable(referenceTableName);
 				rInfo.setName(relationName);
 				rInfo.addKey(pkName, fkName);
