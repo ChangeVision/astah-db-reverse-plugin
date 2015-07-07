@@ -160,6 +160,11 @@ public class DBReverseUtil {
 			dbReader = null;
 			showMessage(Messages.getMessage("message.driver.notfound",e.getMessage()));
             return;
+		} catch (Throwable e) {
+		    logger.error(e.getMessage(), e);
+		    dbReader = null;
+		    showMessage(Messages.getMessage("message.driver.notfound",e.getMessage()));
+		    return;
 		}
         ImportButton.getInstance().setEnabled(true);
         schemaCombo.setEnabled(true);
