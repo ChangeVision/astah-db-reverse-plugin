@@ -42,6 +42,11 @@ public class DBConnection {
 	 * TABLE_TYPE String => table name
 	 */
 	public static final int TABLE_TYPE = 4;
+	
+	/**
+	 * REMARKS String => comment describing table (may be null)
+	 */
+	public static final int REMARKS = 5;
 
 	private Connection connection;
 
@@ -144,9 +149,11 @@ public class DBConnection {
         String tableCatalog = res.getString(TABLE_CATALOG);
         String tableSchema = res.getString(TABLE_SCHEMA);
         String tableName = res.getString(TABLE_NAME);
+        String remarks = res.getString(REMARKS);
         String catalog = tableCatalog != null ? tableCatalog : baseCatalog;
         String schema = tableSchema != null ? tableSchema : baseSchema;
         TableInfo tableInfo = new TableInfo(catalog,schema,tableName);
+        tableInfo.setDefinition(remarks);
         return tableInfo;
     }
 

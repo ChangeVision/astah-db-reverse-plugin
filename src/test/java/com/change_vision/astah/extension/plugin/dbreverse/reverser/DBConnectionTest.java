@@ -70,12 +70,15 @@ public class DBConnectionTest {
         connection.connect(info);
         List<TableInfo> tables = connection.getTables(null, "PUBLIC");
         boolean found = false;
+        String definition = null;
         for (TableInfo table : tables) {
             if (table.getName().equals("SAMPLE")) {
                 found = true;
+                definition = table.getDefinition();
             }
         }
         assertThat(found,is(true));
+        assertThat(definition,is("Definition of sample table."));
     }
     
     @Test
