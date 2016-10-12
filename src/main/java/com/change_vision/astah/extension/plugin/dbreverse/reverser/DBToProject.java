@@ -301,12 +301,24 @@ public class DBToProject {
 			        String defaultValue = attributeInfo.getDefaultValue();
 			        attribute.setDefaultValue(defaultValue);
 			        String lengthPrecision = attributeInfo.getLengthPrecision();
-			        attribute.setLengthPrecision(lengthPrecision);
+			        setLengthPrecision(attribute, lengthPrecision);
 			        logger.debug("Chaged attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
 			    }
 			}
 		}
 	}
+
+    private void setLengthPrecision(IERAttribute attribute,
+            String lengthPrecision) {
+        try {
+            attribute.setLengthPrecision(lengthPrecision);
+        } catch (InvalidEditingException e) {
+            if (InvalidEditingException.PARAMETER_ERROR_KEY.equals(e.getKey())) {
+                logger.warn("Ignored invalid length/precision]:=" + attribute.getName());
+            }
+        }
+
+    }
 
     private IERDatatype findOrConvertDatatype(DatatypeInfo datatypeInfo)
             throws InvalidEditingException {
