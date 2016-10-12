@@ -14,7 +14,7 @@
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>${user.home}/.astah/${astah.edition}/dbreverse.log</File>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
+			<level>DEBUG</level>
 		</filter>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>${user.home}/.astah/${astah.edition}/dbreverse.%i.log.zip</FileNamePattern>
@@ -29,9 +29,9 @@
 			<Pattern>%d %-5p %c %X - %m%n</Pattern>
 		</encoder>
 	</appender>
-	<root level="${rootLevel:-OFF}">
-		<appender-ref ref="FILE" />
-		<!-- <appender-ref ref="STDOUT" /> -->
-	</root>
+    <root level="DEBUG">
+      <appender-ref ref="FILE" />
+      <appender-ref ref="STDOUT" />
+  </root>
 
 </configuration>

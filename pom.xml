@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.change_vision.astah.extension.plugin</groupId>
   <artifactId>dbreverse</artifactId>
-  <version>1.0.7-SNAPSHOT</version>
+  <version>1.0.7</version>
   <packaging>jar</packaging>
   <name>%bundle.name</name>
   <description>%bundle.description</description>
@@ -322,17 +322,32 @@
       <version>1.8.4</version>
       <scope>test</scope>
     </dependency>
-  <dependency>
-    <groupId>com.h2database</groupId>
-    <artifactId>h2</artifactId>
-    <version>1.3.170</version>
-    <scope>test</scope>
-  </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.3.170</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+	  <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+	  <version>0.9.30</version>
+    </dependency>
+    <dependency>
+	  <groupId>ch.qos.logback</groupId>
+	  <artifactId>logback-core</artifactId>
+	  <version>0.9.30</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.6.4</version>
     </dependency>
+	<dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.6.4</version>
+	</dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
