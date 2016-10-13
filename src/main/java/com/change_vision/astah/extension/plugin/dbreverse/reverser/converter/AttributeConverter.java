@@ -1,5 +1,8 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser.converter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DatatypeFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.finder.DomainFinder;
 import com.change_vision.astah.extension.plugin.dbreverse.reverser.model.AttributeInfo;
@@ -16,6 +19,7 @@ import com.change_vision.jude.api.inf.model.IERSchema;
 
 public class AttributeConverter {
 
+    private static final Logger logger = LoggerFactory.getLogger(AttributeConverter.class);
     private ERModelEditor editor;
     private IERModel erModel;
     private DatatypeFinder datatypeFinder;
@@ -45,7 +49,17 @@ public class AttributeConverter {
         converted.setNotNull(attributeInfo.isPK() ? true : attributeInfo.isNotNull());
         converted.setDefaultValue(attributeInfo.getDefaultValue());
         converted.setDefinition(attributeInfo.getDefinition());
-        converted.setLengthPrecision(attributeInfo.getLengthPrecision());
+        convertLengthPrecision(converted, attributeInfo.getLengthPrecision());
+    }
+
+    private void convertLengthPrecision(IERAttribute converted, String lengthPrecision) {
+        try {
+            converted.setLengthPrecision(lengthPrecision);
+        } catch (InvalidEditingException e) {
+            if (InvalidEditingException.PARAMETER_ERROR_KEY.equals(e.getKey())) {
+                logger.warn("Ignored invalid length/precision:=" + converted.getName());
+            }
+        }
     }
 
     private IERAttribute doConvert(IEREntity owner, AttributeInfo attributeInfo)
