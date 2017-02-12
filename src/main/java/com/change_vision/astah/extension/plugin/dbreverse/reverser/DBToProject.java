@@ -49,7 +49,9 @@ public class DBToProject {
 
 	private IERModel erModel;
 
-	private Map<String, AttributeInfo> fkInfo;
+	private Map<String, TableInfo> tableInfoMap;
+	   
+    private Map<String, AttributeInfo> fkInfo;
 
     private Map<IEREntity,List<IndexInfo>> entityIndexMap;
     
@@ -84,7 +86,16 @@ public class DBToProject {
         this.monitor = monitor;
     }
 
+    private void createTableInfoMap(List<TableInfo> tableInfos) {
+        tableInfoMap = new HashMap<String, TableInfo>();
+        for (TableInfo t: tableInfos) {
+            tableInfoMap.put(t.getName(), t);
+        }
+    }
+    
 	public void importToProject(IModel project, List<TableInfo> tables, List<ERRelationshipInfo> relationships) throws InvalidEditingException {
+	    createTableInfoMap(tables);
+	    
 		fkInfo = new HashMap<String, AttributeInfo>();
 		entityIndexMap = new HashMap<IEREntity, List<IndexInfo>>();
 		indexAttributesMap = new HashMap<IndexInfo, List<String>>();
@@ -104,6 +115,7 @@ public class DBToProject {
             datatypeConverter = new DatatypeConverter(editor, erModel);
 			importTable(tables);
 			importRelationships(relationships);
+            addMissedIndex(tables);
 			showTableCount(tables.size());
 			TransactionManager.endTransaction();
 		} catch (BadTransactionException e) {
@@ -112,6 +124,12 @@ public class DBToProject {
 		}
 	}
 
+    private void addMissedIndex(List<TableInfo> tables) throws InvalidEditingException {
+        for (TableInfo t : tables) {
+            addMissedIndex(entityFinder.find(t.getName()));
+        }
+    }
+    
 	private void showTableCount(int count) {
 	    String message = Messages.getMessage("message.import.table.count",count);
         monitor.showMessage(message);
@@ -185,8 +203,51 @@ public class DBToProject {
 			attributeConverter.convert(entity,aInfo);
 		}
 	}
+	
+	// Use to compare objects simply.
+    // ERRelationshipInfo.equals() can't use for Collections.conains().
+	private boolean containsERRelationshipInfo(ERRelationshipInfo rInfo, List<ERRelationshipInfo> relationships) {
+	    for (ERRelationshipInfo e : relationships) {
+	        if (e == rInfo) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
+	// Reorder to avoid that an exception occures while a relationship is created
+	private List<ERRelationshipInfo> orderRelationships(List<ERRelationshipInfo> relationships) {
+        List<ERRelationshipInfo> newRelationships = new ArrayList<ERRelationshipInfo>();
+        List<ERRelationshipInfo> laterRelationships = new ArrayList<ERRelationshipInfo>();
+        for (ERRelationshipInfo rInfo : relationships) {
+            logger.debug("[ordering start]" + rInfo.getName());
+            Map<String, String> keyMap = rInfo.getKeys();
+            for (String key : keyMap.keySet()) {
+                logger.debug("key - val: " + key + " - " + keyMap.get(key));
+                if (key.equals(keyMap.get(key))) {
+                    newRelationships.add(rInfo);
+                    logger.debug("add to newlist : " + rInfo.getName());
+                    break;
+                }
+            }
+            if (!containsERRelationshipInfo(rInfo, newRelationships)) {
+                laterRelationships.add(rInfo);
+                logger.debug("add to laterlist : " + rInfo.getName());
+            }
+        }
 
+        newRelationships.addAll(laterRelationships);
+        return newRelationships;
+	}
+	
 	private void importRelationships(List<ERRelationshipInfo> relationships) throws InvalidEditingException {
+	    relationships = orderRelationships(relationships);
+        logger.debug("[importRelationships start]");
+        for (ERRelationshipInfo rInfo : relationships) {
+            logger.debug(rInfo.getName());
+        }
+        logger.debug("[importRelationships end]");
+
 		for (ERRelationshipInfo rInfo : relationships) {
 			IEREntity parent = entityFinder.find(rInfo.getParentTable());
 			IEREntity child = entityFinder.find(rInfo.getChildTable());
@@ -206,8 +267,8 @@ public class DBToProject {
 			IEREntity child, ERRelationshipInfo errInfo) throws InvalidEditingException {
 		String relationshipName = errInfo.getName();
 		IERRelationship relationship = null;
+        debugCreateERRelationship(errInfo, parent, child);
 		if (errInfo.isIdentifying()) {
-			debugCreateERRelationship(errInfo, parent, child);
 			if (parent.equals(child)) {
 			    String warnMessage = Messages.getMessage("message.import.relationship.error.message",relationshipName);
                 monitor.showMessage(warnMessage);
@@ -218,16 +279,15 @@ public class DBToProject {
 				return;
 			} else {
 				relationship = editor.createIdentifyingRelationship(parent, child, relationshipName, relationshipName);
-				checkRelationship(parent, child, errInfo, relationship);
-				renameForeignKey(relationship, parent, child, errInfo);
-				//[56_16_improve_fk2]
+                checkRelationship(parent, child, errInfo, relationship);
+                renameForeignKey(relationship, parent, child, errInfo);
+                //[56_16_improve_fk2]
 				doSpecialForChangeForeignKeyName(child, relationship);
 			}
 		} else if (errInfo.isNonIdentifying()) {
-			debugCreateERRelationship(errInfo, parent, child);
 			relationship = editor.createNonIdentifyingRelationship(parent, child, relationshipName, relationshipName);
-			checkRelationship(parent, child, errInfo, relationship);
-			renameForeignKey(relationship, parent, child, errInfo);
+            checkRelationship(parent, child, errInfo, relationship);
+            renameForeignKey(relationship, parent, child, errInfo);
 			//[56_16_improve_fk2]
 			doSpecialForChangeForeignKeyName(child, relationship);
 		} else if (errInfo.isMultiToMulti()) {
@@ -243,7 +303,8 @@ public class DBToProject {
 	}
 
 	private void debugCreateERRelationship(ERRelationshipInfo errInfo,IEREntity parent, IEREntity child) {
-		logger.debug("isIdentifying : " + errInfo.isIdentifying());
+	    logger.debug("name : " + errInfo.getName());
+        logger.debug("isIdentifying : " + errInfo.isIdentifying());
 		logger.debug("isNonIdentifying : " + errInfo.isNonIdentifying());
 
 		// parent
@@ -268,6 +329,14 @@ public class DBToProject {
 			logger.debug("[C]Entity Non-PK:=" + nonPrimaryKeys[0].getName() + " : " + nonPrimaryKeys[0].getDatatype());
 		}
 	}
+	
+	AttributeInfo getAttributeInfo(String tableName, String attributeName) {
+	    TableInfo table = tableInfoMap.get(tableName);
+	    if (table == null) {
+	        return null;
+	    }
+	    return table.getAttributeInfo(attributeName);
+	}
 
 	//[56_16_improve_fk2]
 	private void doSpecialForChangeForeignKeyName(IEREntity child,
@@ -279,7 +348,7 @@ public class DBToProject {
 		for (int i = 0; i < foreignKeys.length; i++) {
 			IERAttribute attribute = foreignKeys[i];
 			logger.debug("Created attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
-			AttributeInfo attributeInfo = getFKAttributeInfo(child.getName());
+			AttributeInfo attributeInfo = getAttributeInfo(child.getName(), attribute.getName());
 			if (attributeInfo == null) {
 				logger.warn("Ignored unexpected table:=" + child.getName());
 				continue;
@@ -301,8 +370,8 @@ public class DBToProject {
 			        String defaultValue = attributeInfo.getDefaultValue();
 			        attribute.setDefaultValue(defaultValue);
 			        String lengthPrecision = attributeInfo.getLengthPrecision();
+			        logger.debug("Set length: " + attribute.getName() + " ; " + lengthPrecision);
 			        setLengthPrecision(attribute, lengthPrecision);
-			        logger.debug("Chaged attribute:=" + attribute.getName() + " ; " + attribute.getDatatype().getName());
 			    }
 			}
 		}
@@ -345,16 +414,16 @@ public class DBToProject {
         return domain;
     }
 
-	private void checkRelationship(IEREntity parent, IEREntity child,
-			ERRelationshipInfo errInfo, IERRelationship relationship)
-			throws InvalidEditingException {
-		IERIndex index = getKindOfRelationship(parent, errInfo);
-		if (index != null) {
-			addMissedAttributeForIndex(parent);
-			relationship.setERIndex(index);
-		}
-		addMissedAttributeForIndex(child);
-	}
+    private void checkRelationship(IEREntity parent, IEREntity child,
+            ERRelationshipInfo errInfo, IERRelationship relationship)
+            throws InvalidEditingException {
+        IERIndex index = getKindOfRelationship(parent, errInfo);
+        if (index != null) {
+            addMissedAttributeForIndex(parent);
+            relationship.setERIndex(index);
+        }
+        addMissedAttributeForIndex(child);
+    }
 
 	private void addMissedAttributeForIndex(IEREntity entity) throws InvalidEditingException {
 		addMissedAttributes(entity);
@@ -478,4 +547,5 @@ public class DBToProject {
 		}
 		return null;
 	}
+
 }

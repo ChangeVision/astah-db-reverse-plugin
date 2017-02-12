@@ -293,6 +293,8 @@ public class DBReader {
 			tbInfo.addAttributes(getAttributes(tbInfo));
 			// indexes
 			tbInfo.setIndexes(getIndexes(tbInfo));
+			
+			logger.debug(tbInfo.toString());
 		}
 
 		return tableList;
@@ -381,6 +383,8 @@ public class DBReader {
 		ResultSet attrSet = connection.getMetaData().getColumns(tableInfo.getCatalog(), tableInfo.getSchema(), tableInfo.getName(), "%");
 		List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
 		List<String> attrs = new ArrayList<String>();
+		StringBuffer logBuf = new StringBuffer();
+        logBuf.append("\nfromDB Table:" + tableInfo.getName() + "[\n");
 		while (attrSet.next()) {
 			AttributeInfo atInfo = new AttributeInfo();
 
@@ -391,13 +395,16 @@ public class DBReader {
 			}
 			attrs.add(attrName);
 			atInfo.setName(attrName);
-
+            logBuf.append(" [attrName=" + attrName);
+	        
 			//data type
 			DatatypeInfo dInfo = getDatatypeInfo(attrSet);
 			atInfo.setDataType(dInfo);
-
+            logBuf.append(", type=" + dInfo.getName());
+            
 			//length precision
 			int length = getLength(attrSet, dInfo);
+            logBuf.append(", length=" + length);
 			if (!NONE.equals(dInfo.getPrecisionConstraint())) {
 				atInfo.setPrecision(String.valueOf(length));
 			} else if (!NONE.equals(dInfo.getLengthConstraint())) {
@@ -406,22 +413,26 @@ public class DBReader {
 
 			//remark
 			String definition = getString(attrSet, REMARKS);
+            logBuf.append(", remarks=" + definition);
 			definition = definition == null ? "" : definition;
 			atInfo.setDefinition(definition);
 
 			//default value
 			String defaultValue = getString(attrSet, COLUMN_DEF);
-
+            logBuf.append(", defaultValue=" + defaultValue);            
 			defaultValue = defaultValue == null ? "" : defaultValue;
 			atInfo.setDefaultValue(defaultValue);
 
 			//not null
 			String notNull = getString(attrSet,IS_NULLABLE);
-			if (notNull != null) {
+            if (notNull != null) {
 				notNull = notNull.trim();
 			}
 			atInfo.setNotNull("NO".equals(notNull));
-
+            logBuf.append(", nullable=" + notNull);
+            
+            logBuf.append("]\n");
+            
 			//Primary Key
 			atInfo.setPK(pks.contains(attrName));
 			atInfo.setFK(fks.keySet().contains(attrName));
@@ -429,7 +440,8 @@ public class DBReader {
 			attributes.add(atInfo);
 		}
 		attrSet.close();
-
+        logBuf.append("]");
+        logger.debug(logBuf.toString());
 		return attributes;
 	}
 
@@ -966,6 +978,7 @@ public class DBReader {
 
 				relationMap.put(relationMapKey, rInfo);
 				relationList.add(rInfo);
+	            logger.debug(rInfo.toString());
 			}
 			res.close();
 		}

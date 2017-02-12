@@ -30,7 +30,9 @@ public class TableConverter {
             String name = tableInfo.getName();
             entity = editor.createEREntity(schema, name, name);
             entity.setType(tableInfo.getType());
-            entity.setDefinition(tableInfo.getDefinition());
+            if (tableInfo.getDefinition() != null) {
+                entity.setDefinition(tableInfo.getDefinition());
+            }
 //            TransactionManager.endTransaction();
         } catch (InvalidEditingException e) {
             logger.error("invalid editing exception is occured.",e);
