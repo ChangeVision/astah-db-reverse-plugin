@@ -294,6 +294,13 @@ public class DBToProject {
 			relationship = editor.createMultiToMultiRelationship(parent, child, relationshipName, relationshipName);
 		}
 
+        if (relationship == null) {
+            logger.debug("relationship is null.");
+            return;
+        }
+
+        relationship.setERIndexToPrimarykey();
+
 		if (!(errInfo.isIdentifying() && parent.equals(child))) {
 			relationship.setVerbPhraseParent(errInfo.getVerbPhraseParent());
 			relationship.setVerbPhraseChild(errInfo.getVerbPhraseChild());
