@@ -115,7 +115,7 @@ public class DBToProject {
             datatypeConverter = new DatatypeConverter(editor, erModel);
 			importTable(tables);
 			importRelationships(relationships);
-            addMissedIndex(tables);
+            addMissedIndexes(tables, relationships);
 			showTableCount(tables.size());
 			TransactionManager.endTransaction();
 		} catch (BadTransactionException e) {
@@ -124,10 +124,59 @@ public class DBToProject {
 		}
 	}
 
-    private void addMissedIndex(List<TableInfo> tables) throws InvalidEditingException {
+    private void addMissedIndexes(List<TableInfo> tables, List<ERRelationshipInfo> relations) throws InvalidEditingException {
         for (TableInfo t : tables) {
             addMissedIndex(entityFinder.find(t.getName()));
+            updateIndexes(t);
         }
+    }
+    
+    private IERIndex getERIndex(IEREntity entity, IndexInfo indexInfo) {
+        for (IERIndex index : entity.getERIndices()) {
+            if (index.getName().equals(indexInfo.getName())) {
+                return index;
+            }
+        }
+        return null;
+    }
+
+    private void updateIndexes(TableInfo table) throws InvalidEditingException {
+        logger.debug("[Update Index start]");
+        for (IndexInfo indexInfo : table.getIndexes()) {
+            logger.debug("Index: " + indexInfo.toString());
+            IEREntity entity = entityFinder.find(table.getName());
+            if (entity == null) {
+                continue;
+            }
+
+            IERIndex targetIndex = getERIndex(entity, indexInfo);
+            if (targetIndex == null) {
+                continue;
+            }
+            logger.debug("Target Index: " + targetIndex.toString());
+            
+            Map<String, IERAttribute> targetAttributes = new HashMap<String, IERAttribute>();
+            
+            for (IERAttribute indexAttr : targetIndex.getERAttributes()) {
+                targetAttributes.put(indexAttr.getName(), indexAttr);
+                logger.debug("Target Index attr: " + indexAttr.getName());
+            }
+            
+            for (String attribute : indexInfo.getAttributes()) {
+                logger.debug("Index attr: " + attribute);
+                if (targetAttributes.containsKey(attribute)) {
+                    targetAttributes.remove(attribute);
+                    continue;
+                }
+                IERAttribute attr = attributeFinder.find(entity, attribute);
+                if (attr == null) {
+                    break;
+                }
+                logger.debug("added attr: " + attr.getName());
+                targetIndex.addERAttribute(attr);
+            }
+        }
+        logger.debug("[Update Index end]");
     }
     
 	private void showTableCount(int count) {
@@ -161,7 +210,7 @@ public class DBToProject {
 				erindexAttributesMap.put(newIndex, missedAttributes);
 			} else {
 			    indexAttributesMap.put(indexInfo, missedAttributes);
-				missedInfo.add(indexInfo);
+                missedInfo.add(indexInfo);
 			}
 		}
 		if (!missedInfo.isEmpty()) {
