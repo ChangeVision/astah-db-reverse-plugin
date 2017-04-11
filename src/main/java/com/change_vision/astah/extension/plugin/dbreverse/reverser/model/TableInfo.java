@@ -66,6 +66,15 @@ public class TableInfo {
 		return attributes;
 	}
 
+	public AttributeInfo getAttributeInfo(String name) {
+        for (AttributeInfo attributeInfo : attributes) {
+            if (attributeInfo.getName().equals(name)) {
+                return attributeInfo;
+            }
+        }
+        return null;
+	}
+	
 	public String getType() {
 		return type;
 	}

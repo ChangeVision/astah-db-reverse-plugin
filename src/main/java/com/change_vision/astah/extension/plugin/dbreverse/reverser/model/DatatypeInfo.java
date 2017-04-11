@@ -1,5 +1,7 @@
 package com.change_vision.astah.extension.plugin.dbreverse.reverser.model;
 
+import com.change_vision.astah.extension.plugin.dbreverse.reverser.DBReader;
+
 public class DatatypeInfo {
 
 	private String name;
@@ -16,8 +18,8 @@ public class DatatypeInfo {
 
 	public DatatypeInfo() {
 		name = "";
-		lengthConstraint = "None";
-		precisionConstraint = "None";
+		lengthConstraint = DBReader.OPTIONAL;
+		precisionConstraint = DBReader.OPTIONAL;
 		defaultLength = "";
 		defaultPrecision = "";
 		description = "";
