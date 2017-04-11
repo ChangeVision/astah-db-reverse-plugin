@@ -3,7 +3,7 @@ DB Reverse Engineering Plugin
 
 Version
 ----------------
-1.0.7
+1.0.8
 
 Available for
 ----------------
@@ -30,7 +30,7 @@ http://astah.net/features/database-reversing-tool
 
 License
 ---------------
-Copyright 2014 - 2016 Change Vision, Inc.
+Copyright 2014 - 2017 Change Vision, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this work except in compliance with the License.
