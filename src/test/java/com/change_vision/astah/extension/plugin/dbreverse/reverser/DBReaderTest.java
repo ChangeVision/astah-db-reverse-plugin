@@ -36,7 +36,7 @@ public class DBReaderTest {
     @Before
     public void before() throws Exception {
         reader = new DBReader();
-        URL jarURL = DBReaderTest.class.getResource("h2-1.3.170.jar");
+        URL jarURL = DBReaderTest.class.getResource("h2-2.0.206.jar");
         String path = jarURL.getPath();
         info = new ConnectionInfo();
         info.setPathfile(path);
