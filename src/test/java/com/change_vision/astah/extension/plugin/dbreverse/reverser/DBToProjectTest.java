@@ -127,20 +127,20 @@ public class DBToProjectTest {
         assertThat(sampleEntityNonPrimaryKeys[3].getDatatype().getName(), is("SMALLINT"));
         assertThat(sampleEntityNonPrimaryKeys[4].getDatatype().getName(), is("BIGINT"));
         assertThat(sampleEntityNonPrimaryKeys[5].getDatatype().getName(), is("DECIMAL"));
-        assertThat(sampleEntityNonPrimaryKeys[6].getDatatype().getName(), is("DOUBLE"));
+        assertThat(sampleEntityNonPrimaryKeys[6].getDatatype().getName(), is("DOUBLE PRECISION"));
         assertThat(sampleEntityNonPrimaryKeys[7].getDatatype().getName(), is("REAL"));
         assertThat(sampleEntityNonPrimaryKeys[8].getDatatype().getName(), is("TIME"));
         assertThat(sampleEntityNonPrimaryKeys[9].getDatatype().getName(), is("DATE"));
         assertThat(sampleEntityNonPrimaryKeys[10].getDatatype().getName(), is("TIMESTAMP"));
-        assertThat(sampleEntityNonPrimaryKeys[11].getDatatype().getName(), is("VARBINARY"));
-        assertThat(sampleEntityNonPrimaryKeys[12].getDatatype().getName(), is("OTHER"));
-        assertThat(sampleEntityNonPrimaryKeys[13].getDatatype().getName(), is("VARCHAR"));
+        assertThat(sampleEntityNonPrimaryKeys[11].getDatatype().getName(), is("BINARY"));
+        assertThat(sampleEntityNonPrimaryKeys[12].getDatatype().getName(), is("JAVA_OBJECT"));
+        assertThat(sampleEntityNonPrimaryKeys[13].getDatatype().getName(), is("CHARACTER VARYING"));
         assertThat(sampleEntityNonPrimaryKeys[14].getDatatype().getName(), is("VARCHAR_IGNORECASE"));
-        assertThat(sampleEntityNonPrimaryKeys[15].getDatatype().getName(), is("CHAR"));
-        assertThat(sampleEntityNonPrimaryKeys[16].getDatatype().getName(), is("BLOB"));
-        assertThat(sampleEntityNonPrimaryKeys[17].getDatatype().getName(), is("CLOB"));
+        assertThat(sampleEntityNonPrimaryKeys[15].getDatatype().getName(), is("CHARACTER"));
+        assertThat(sampleEntityNonPrimaryKeys[16].getDatatype().getName(), is("BINARY LARGE OBJECT"));
+        assertThat(sampleEntityNonPrimaryKeys[17].getDatatype().getName(), is("CHARACTER LARGE OBJECT"));
         assertThat(sampleEntityNonPrimaryKeys[18].getDatatype().getName(), is("UUID"));
-        assertThat(sampleEntityNonPrimaryKeys[19].getDatatype().getName(), is("ARRAY"));
+        assertThat(sampleEntityNonPrimaryKeys[19].getDatatype().getName(), is("BOOLEAN ARRAY"));
 
         IERIndex[] indices = sampleEntity.getERIndices();
         assertThat(indices.length, is(2));
