@@ -26,7 +26,7 @@ public class DBConnectionTest {
 
     @Before
     public void before() throws Exception {
-        URL jarURL = DBConnectionTest.class.getResource("h2-2.0.206.jar");
+        URL jarURL = DBConnectionTest.class.getResource("h2-2.1.212.jar");
         String path = jarURL.getPath();
         info = new ConnectionInfo();
         info.setPathfile(path);
