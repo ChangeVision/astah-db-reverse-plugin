@@ -45,7 +45,7 @@ public class DBToProjectTest {
     @Before
     public void before() throws Exception {
         reader = new DBReader();
-        URL jarURL = DBToProjectTest.class.getResource("h2-2.0.206.jar");
+        URL jarURL = DBToProjectTest.class.getResource("h2-2.1.212.jar");
         String path = jarURL.getPath();
         ConnectionInfo info = new ConnectionInfo();
         info.setPathfile(path);

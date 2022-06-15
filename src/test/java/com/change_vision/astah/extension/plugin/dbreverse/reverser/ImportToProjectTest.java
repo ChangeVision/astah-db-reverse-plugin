@@ -31,7 +31,7 @@ public class ImportToProjectTest {
     @Test
     public void importFromRealH2Repository() throws Exception {
         reader = new DBReader();
-        URL jarURL = ImportToProjectTest.class.getResource("h2-2.0.206.jar");
+        URL jarURL = ImportToProjectTest.class.getResource("h2-2.1.212.jar");
         String path = jarURL.getPath();
         ConnectionInfo info = new ConnectionInfo();
         info.setPathfile(path);
