@@ -17,7 +17,6 @@ public class MessageTextArea extends JTextArea {
 		setLineWrap(true);
 		setWrapStyleWord(true);
 		setRows(6);
-		setBorder(BorderFactory.createLineBorder(Color.black));
 	}
 
 	public static MessageTextArea getInstance() {
