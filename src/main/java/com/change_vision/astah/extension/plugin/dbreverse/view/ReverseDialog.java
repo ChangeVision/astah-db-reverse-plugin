@@ -79,7 +79,8 @@ public class ReverseDialog extends JDialog {
 
 		setSize(600, 440);
 		setLocation();
-		setResizable(false);
+		setResizable(true);
+		pack();
 		DBReverseUtil.showMessage(Messages.getMessage("message.console.initialize"));
 	}
 
